@@ -4,7 +4,15 @@ import { useMutation } from "@tanstack/react-query";
 export const useSignupMutation = () =>
   useMutation({
     mutationKey: ["registerUser"],
-    mutationFn: async ({ email, password, fullName }: { email: string; password: string; fullName: string }) => {
+    mutationFn: async ({
+      email,
+      password,
+      fullName,
+    }: {
+      email: string;
+      password: string;
+      fullName: string;
+    }) => {
       const { error } = await supabase.auth.signUp({
         email,
         password,

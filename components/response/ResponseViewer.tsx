@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,18 +16,21 @@ const formatBytes = (bytes: number) => {
   const k = 1024;
   const sizes = ["Bytes", "KB", "MB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i];
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 };
 
-export function ResponseViewer({ response, responseTime }: ResponseViewerProps) {
+export function ResponseViewer({
+  response,
+  responseTime,
+}: ResponseViewerProps) {
   const isSuccess = response.status >= 200 && response.status < 300;
   const isError = response.status >= 400 || response.error;
 
   const responseBody = response.error
     ? response.error
     : typeof response.data === "string"
-    ? response.data
-    : JSON.stringify(response.data, null, 2);
+      ? response.data
+      : JSON.stringify(response.data, null, 2);
 
   const bodySize = new Blob([responseBody]).size;
 
@@ -64,7 +67,10 @@ export function ResponseViewer({ response, responseTime }: ResponseViewerProps) 
         <Tabs defaultValue="body" className="w-full h-full flex flex-col">
           <TabsList>
             <TabsTrigger value="body">Body</TabsTrigger>
-            <TabsTrigger value="headers">Headers ({response.headers ? Object.keys(response.headers).length : 0})</TabsTrigger>
+            <TabsTrigger value="headers">
+              Headers (
+              {response.headers ? Object.keys(response.headers).length : 0})
+            </TabsTrigger>
             <TabsTrigger value="cookies">Cookies</TabsTrigger>
           </TabsList>
 

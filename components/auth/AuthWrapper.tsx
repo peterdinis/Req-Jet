@@ -18,7 +18,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Zap, Eye, EyeOff } from "lucide-react";
 import { useLoginMutation } from "@/hooks/auth/useLogin";
 import { useSignupMutation } from "@/hooks/auth/useRegister";
-import { useResetPasswordMutation, useUpdatePasswordMutation } from "@/hooks/auth/usePasswords";
+import {
+  useResetPasswordMutation,
+  useUpdatePasswordMutation,
+} from "@/hooks/auth/usePasswords";
 
 const AuthWrapper: FC = () => {
   const [email, setEmail] = useState("");
@@ -50,24 +53,26 @@ const AuthWrapper: FC = () => {
     const type = hashParams.get("type");
 
     if (access_token && refresh_token) {
-      supabase.auth.setSession({ access_token, refresh_token }).then(({ error }) => {
-        if (error) {
-          toast({
-            title: "Authentication failed",
-            description: error.message,
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Welcome!",
-            description:
-              type === "signup"
-                ? "Your email has been confirmed."
-                : "You are logged in.",
-          });
-          router.push("/dashboard");
-        }
-      });
+      supabase.auth
+        .setSession({ access_token, refresh_token })
+        .then(({ error }) => {
+          if (error) {
+            toast({
+              title: "Authentication failed",
+              description: error.message,
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Welcome!",
+              description:
+                type === "signup"
+                  ? "Your email has been confirmed."
+                  : "You are logged in.",
+            });
+            router.push("/dashboard");
+          }
+        });
     }
 
     if (type === "recovery") {
@@ -82,7 +87,10 @@ const AuthWrapper: FC = () => {
       { email, password },
       {
         onSuccess: () => {
-          toast({ title: "Welcome back!", description: "Successfully logged in." });
+          toast({
+            title: "Welcome back!",
+            description: "Successfully logged in.",
+          });
           router.push("/dashboard");
         },
         onError: (err: any) =>
@@ -91,7 +99,7 @@ const AuthWrapper: FC = () => {
             description: err.message,
             variant: "destructive",
           }),
-      }
+      },
     );
   };
 
@@ -116,7 +124,7 @@ const AuthWrapper: FC = () => {
             description: err.message,
             variant: "destructive",
           }),
-      }
+      },
     );
   };
 
@@ -139,7 +147,7 @@ const AuthWrapper: FC = () => {
             description: err.message,
             variant: "destructive",
           }),
-      }
+      },
     );
   };
 
@@ -164,7 +172,7 @@ const AuthWrapper: FC = () => {
             description: err.message,
             variant: "destructive",
           }),
-      }
+      },
     );
   };
 
@@ -183,7 +191,9 @@ const AuthWrapper: FC = () => {
             <Zap className="w-8 h-8 text-primary-foreground" />
           </div>
           <h1 className="text-3xl font-bold mb-2">API Testing Platform</h1>
-          <p className="text-muted-foreground">Test, debug, and document your APIs</p>
+          <p className="text-muted-foreground">
+            Test, debug, and document your APIs
+          </p>
         </div>
 
         {/* Card */}
@@ -193,15 +203,15 @@ const AuthWrapper: FC = () => {
               {isRecoveryMode
                 ? "Set New Password"
                 : showResetPassword
-                ? "Reset Password"
-                : "Get Started"}
+                  ? "Reset Password"
+                  : "Get Started"}
             </CardTitle>
             <CardDescription>
               {isRecoveryMode
                 ? "Enter your new password below"
                 : showResetPassword
-                ? "Enter your email to receive a password reset link"
-                : "Sign in or create an account to continue"}
+                  ? "Enter your email to receive a password reset link"
+                  : "Sign in or create an account to continue"}
             </CardDescription>
           </CardHeader>
 
@@ -348,7 +358,11 @@ const AuthWrapper: FC = () => {
                         </button>
                       </div>
                     </div>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={isLoading}
+                    >
                       {isLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -415,7 +429,11 @@ const AuthWrapper: FC = () => {
                         </button>
                       </div>
                     </div>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={isLoading}
+                    >
                       {isLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />

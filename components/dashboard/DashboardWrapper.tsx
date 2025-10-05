@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { FC, useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "../ui/sidebar";
@@ -8,8 +8,8 @@ import { RequestBuilder } from "../requests/RequestBuilder";
 
 const DashboardWrapper: FC = () => {
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
-  const {user} = useUser();
-  
+  const { user } = useUser();
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
@@ -20,7 +20,7 @@ const DashboardWrapper: FC = () => {
               <SidebarTrigger />
             </div>
           </div>
-         <RequestBuilder selectedRequest={selectedRequest} />
+          <RequestBuilder selectedRequest={selectedRequest} />
         </main>
       </div>
     </SidebarProvider>

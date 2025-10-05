@@ -1,11 +1,17 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Send, Plus, Trash2, Loader2, Save, Play } from "lucide-react";
@@ -33,7 +39,9 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
   const [method, setMethod] = useState("GET");
   const [url, setUrl] = useState("");
   const [headers, setHeaders] = useState<Header[]>([{ key: "", value: "" }]);
-  const [queryParams, setQueryParams] = useState<QueryParam[]>([{ key: "", value: "", enabled: true }]);
+  const [queryParams, setQueryParams] = useState<QueryParam[]>([
+    { key: "", value: "", enabled: true },
+  ]);
   const [authType, setAuthType] = useState("none");
   const [authToken, setAuthToken] = useState("");
   const [body, setBody] = useState("");
@@ -41,7 +49,9 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
   const [requestType, setRequestType] = useState<"rest" | "graphql">("rest");
   const [graphqlQuery, setGraphqlQuery] = useState("");
   const [graphqlVariables, setGraphqlVariables] = useState("{}");
-  const [testScript, setTestScript] = useState("// Test script\n// Available: response, responseTime\n// Example:\n// if (response.status === 200) {\n//   console.log('Success!');\n// }");
+  const [testScript, setTestScript] = useState(
+    "// Test script\n// Available: response, responseTime\n// Example:\n// if (response.status === 200) {\n//   console.log('Success!');\n// }",
+  );
   const [testResults, setTestResults] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<any>(null);
@@ -70,7 +80,11 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
     setHeaders(headers.filter((_, i) => i !== index));
   };
 
-  const updateHeader = (index: number, field: "key" | "value", value: string) => {
+  const updateHeader = (
+    index: number,
+    field: "key" | "value",
+    value: string,
+  ) => {
     const newHeaders = [...headers];
     newHeaders[index][field] = value;
     setHeaders(newHeaders);
@@ -84,11 +98,18 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
     setQueryParams(queryParams.filter((_, i) => i !== index));
   };
 
-  const updateQueryParam = (index: number, field: keyof QueryParam, value: string | boolean) => {
+  const updateQueryParam = (
+    index: number,
+    field: keyof QueryParam,
+    value: string | boolean,
+  ) => {
     const newParams = [...queryParams];
     if (field === "enabled" && typeof value === "boolean") {
       newParams[index].enabled = value;
-    } else if ((field === "key" || field === "value") && typeof value === "string") {
+    } else if (
+      (field === "key" || field === "value") &&
+      typeof value === "string"
+    ) {
       newParams[index][field] = value;
     }
     setQueryParams(newParams);
@@ -96,7 +117,9 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
 
   const buildUrl = () => {
     if (!url) return "";
-    const enabledParams = queryParams.filter((p) => p.enabled && p.key && p.value);
+    const enabledParams = queryParams.filter(
+      (p) => p.enabled && p.key && p.value,
+    );
     if (enabledParams.length === 0) return url;
 
     const params = new URLSearchParams();
@@ -108,26 +131,44 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
     try {
       const logs: string[] = [];
       const originalConsoleLog = console.log;
-      
+
       // Override console.log to capture output
       console.log = (...args: any[]) => {
-        logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)).join(' '));
+        logs.push(
+          args
+            .map((a) =>
+              typeof a === "object" ? JSON.stringify(a, null, 2) : String(a),
+            )
+            .join(" "),
+        );
       };
 
       // Execute the test script
-      const testFunction = new Function('response', 'responseTime', 'console', testScript);
+      const testFunction = new Function(
+        "response",
+        "responseTime",
+        "console",
+        testScript,
+      );
       testFunction(responseData, responseTime, console);
 
       // Restore original console.log
       console.log = originalConsoleLog;
-      
-      const result = logs.length > 0 ? logs.join('\n') : 'Tests completed successfully (no console output)';
+
+      const result =
+        logs.length > 0
+          ? logs.join("\n")
+          : "Tests completed successfully (no console output)";
       setTestResults(result);
       toast({ title: "Tests executed" });
     } catch (error: any) {
       const errorMsg = `Test error: ${error.message}`;
       setTestResults(errorMsg);
-      toast({ title: "Test execution failed", description: error.message, variant: "destructive" });
+      toast({
+        title: "Test execution failed",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -144,7 +185,7 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
 
     try {
       const requestHeaders: Record<string, string> = {};
-      
+
       // Add custom headers
       headers.forEach((h) => {
         if (h.key && h.value) {
@@ -206,12 +247,18 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
       setResponse(responseData);
 
       // Run tests if test script exists
-      if (testScript && testScript.trim() && !testScript.includes("// Test script")) {
+      if (
+        testScript &&
+        testScript.trim() &&
+        !testScript.includes("// Test script")
+      ) {
         runTests(responseData, reqTime);
       }
 
       // Save to history
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         await supabase.from("request_history").insert({
           user_id: user.id,
@@ -245,7 +292,10 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
     <div className="flex flex-col h-[calc(100vh-3.5rem)]">
       <div className="border-b border-border p-4 space-y-3">
         <div className="flex gap-2 items-center">
-          <Select value={requestType} onValueChange={(v) => setRequestType(v as "rest" | "graphql")}>
+          <Select
+            value={requestType}
+            onValueChange={(v) => setRequestType(v as "rest" | "graphql")}
+          >
             <SelectTrigger className="w-32">
               <SelectValue />
             </SelectTrigger>
@@ -284,16 +334,21 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
             )}
             Send
           </Button>
-          <Button variant="outline" className="gap-2" onClick={() => setSaveDialogOpen(true)}>
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => setSaveDialogOpen(true)}
+          >
             <Save className="h-4 w-4" />
             Save
           </Button>
         </div>
-        {queryParams.some((p) => p.enabled && p.key && p.value) && requestType === "rest" && (
-          <div className="text-sm text-muted-foreground font-mono bg-muted px-3 py-2 rounded">
-            {buildUrl()}
-          </div>
-        )}
+        {queryParams.some((p) => p.enabled && p.key && p.value) &&
+          requestType === "rest" && (
+            <div className="text-sm text-muted-foreground font-mono bg-muted px-3 py-2 rounded">
+              {buildUrl()}
+            </div>
+          )}
       </div>
 
       <div className="flex-1 overflow-auto">
@@ -303,13 +358,22 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
               <CardTitle>Request</CardTitle>
             </CardHeader>
             <CardContent className="flex-1 overflow-auto">
-              <Tabs defaultValue={requestType === "graphql" ? "graphql" : "params"} className="w-full">
+              <Tabs
+                defaultValue={requestType === "graphql" ? "graphql" : "params"}
+                className="w-full"
+              >
                 <TabsList className="grid w-full grid-cols-6">
-                  {requestType === "rest" && <TabsTrigger value="params">Params</TabsTrigger>}
-                  {requestType === "graphql" && <TabsTrigger value="graphql">GraphQL</TabsTrigger>}
+                  {requestType === "rest" && (
+                    <TabsTrigger value="params">Params</TabsTrigger>
+                  )}
+                  {requestType === "graphql" && (
+                    <TabsTrigger value="graphql">GraphQL</TabsTrigger>
+                  )}
                   <TabsTrigger value="auth">Auth</TabsTrigger>
                   <TabsTrigger value="headers">Headers</TabsTrigger>
-                  {requestType === "rest" && <TabsTrigger value="body">Body</TabsTrigger>}
+                  {requestType === "rest" && (
+                    <TabsTrigger value="body">Body</TabsTrigger>
+                  )}
                   <TabsTrigger value="tests">Tests</TabsTrigger>
                 </TabsList>
 
@@ -338,7 +402,9 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
                           height="150px"
                           defaultLanguage="json"
                           value={graphqlVariables}
-                          onChange={(value) => setGraphqlVariables(value || "{}")}
+                          onChange={(value) =>
+                            setGraphqlVariables(value || "{}")
+                          }
                           theme="vs-dark"
                           options={{
                             minimap: { enabled: false },
@@ -358,19 +424,29 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
                           <input
                             type="checkbox"
                             checked={param.enabled}
-                            onChange={(e) => updateQueryParam(index, "enabled", e.target.checked)}
+                            onChange={(e) =>
+                              updateQueryParam(
+                                index,
+                                "enabled",
+                                e.target.checked,
+                              )
+                            }
                             className="w-4 h-4"
                           />
                           <Input
                             placeholder="Key"
                             value={param.key}
-                            onChange={(e) => updateQueryParam(index, "key", e.target.value)}
+                            onChange={(e) =>
+                              updateQueryParam(index, "key", e.target.value)
+                            }
                             className="flex-1"
                           />
                           <Input
                             placeholder="Value"
                             value={param.value}
-                            onChange={(e) => updateQueryParam(index, "value", e.target.value)}
+                            onChange={(e) =>
+                              updateQueryParam(index, "value", e.target.value)
+                            }
                             className="flex-1"
                           />
                           <Button
@@ -384,7 +460,11 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
                         </div>
                       ))}
                     </div>
-                    <Button variant="outline" onClick={addQueryParam} className="w-full gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={addQueryParam}
+                      className="w-full gap-2"
+                    >
                       <Plus className="h-4 w-4" />
                       Add Parameter
                     </Button>
@@ -427,13 +507,17 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
                       <Input
                         placeholder="Key"
                         value={header.key}
-                        onChange={(e) => updateHeader(index, "key", e.target.value)}
+                        onChange={(e) =>
+                          updateHeader(index, "key", e.target.value)
+                        }
                         className="flex-1"
                       />
                       <Input
                         placeholder="Value"
                         value={header.value}
-                        onChange={(e) => updateHeader(index, "value", e.target.value)}
+                        onChange={(e) =>
+                          updateHeader(index, "value", e.target.value)
+                        }
                         className="flex-1"
                       />
                       <Button
@@ -446,7 +530,11 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
                       </Button>
                     </div>
                   ))}
-                  <Button variant="outline" onClick={addHeader} className="w-full gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={addHeader}
+                    className="w-full gap-2"
+                  >
                     <Plus className="h-4 w-4" />
                     Add Header
                   </Button>
@@ -455,49 +543,57 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
                 {requestType === "rest" && (
                   <TabsContent value="body" className="space-y-4">
                     <div className="space-y-2">
-                    <div className="flex gap-2 items-center">
-                      <Label>Body Type</Label>
-                      <Select value={bodyType} onValueChange={setBodyType}>
-                        <SelectTrigger className="w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="json">JSON</SelectItem>
-                          <SelectItem value="xml">XML</SelectItem>
-                          <SelectItem value="text">Text</SelectItem>
-                          <SelectItem value="form">Form Data</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex gap-2 items-center">
+                        <Label>Body Type</Label>
+                        <Select value={bodyType} onValueChange={setBodyType}>
+                          <SelectTrigger className="w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="json">JSON</SelectItem>
+                            <SelectItem value="xml">XML</SelectItem>
+                            <SelectItem value="text">Text</SelectItem>
+                            <SelectItem value="form">Form Data</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="border border-border rounded-lg overflow-hidden">
+                        <Editor
+                          height="300px"
+                          defaultLanguage={
+                            bodyType === "json"
+                              ? "json"
+                              : bodyType === "xml"
+                                ? "xml"
+                                : "plaintext"
+                          }
+                          value={body}
+                          onChange={(value) => setBody(value || "")}
+                          theme="vs-dark"
+                          options={{
+                            minimap: { enabled: false },
+                            fontSize: 13,
+                            lineNumbers: "on",
+                            roundedSelection: false,
+                            scrollBeyondLastLine: false,
+                            automaticLayout: true,
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div className="border border-border rounded-lg overflow-hidden">
-                      <Editor
-                        height="300px"
-                        defaultLanguage={bodyType === "json" ? "json" : bodyType === "xml" ? "xml" : "plaintext"}
-                        value={body}
-                        onChange={(value) => setBody(value || "")}
-                        theme="vs-dark"
-                        options={{
-                          minimap: { enabled: false },
-                          fontSize: 13,
-                          lineNumbers: "on",
-                          roundedSelection: false,
-                          scrollBeyondLastLine: false,
-                          automaticLayout: true,
-                        }}
-                      />
-                    </div>
-                  </div>
-                </TabsContent>
+                  </TabsContent>
                 )}
 
                 <TabsContent value="tests" className="space-y-4">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label>Test Script</Label>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
-                        onClick={() => response && runTests(response, responseTime)}
+                        onClick={() =>
+                          response && runTests(response, responseTime)
+                        }
                         disabled={!response}
                         className="gap-2"
                       >
@@ -546,7 +642,7 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
           </div>
         </div>
       </div>
-      
+
       <SaveRequestDialog
         open={saveDialogOpen}
         onOpenChange={setSaveDialogOpen}

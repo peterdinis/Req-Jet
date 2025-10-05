@@ -1,7 +1,13 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,7 +28,11 @@ type CollectionDialogProps = {
   collection?: Collection | null;
 };
 
-export function CollectionDialog({ open, onOpenChange, collection }: CollectionDialogProps) {
+export function CollectionDialog({
+  open,
+  onOpenChange,
+  collection,
+}: CollectionDialogProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const { toast } = useToast();
@@ -40,7 +50,9 @@ export function CollectionDialog({ open, onOpenChange, collection }: CollectionD
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       if (collection) {
@@ -57,12 +69,18 @@ export function CollectionDialog({ open, onOpenChange, collection }: CollectionD
       }
     },
     onSuccess: () => {
-      toast({ title: collection ? "Collection updated" : "Collection created" });
+      toast({
+        title: collection ? "Collection updated" : "Collection created",
+      });
       queryClient.invalidateQueries({ queryKey: ["collections"] });
       onOpenChange(false);
     },
     onError: (error: any) => {
-      toast({ title: "Failed to save collection", description: error.message, variant: "destructive" });
+      toast({
+        title: "Failed to save collection",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
@@ -78,7 +96,9 @@ export function CollectionDialog({ open, onOpenChange, collection }: CollectionD
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{collection ? "Edit Collection" : "New Collection"}</DialogTitle>
+          <DialogTitle>
+            {collection ? "Edit Collection" : "New Collection"}
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">

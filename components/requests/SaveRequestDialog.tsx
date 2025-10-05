@@ -1,11 +1,23 @@
-"use client"
+"use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/supabase/client";
@@ -22,7 +34,11 @@ type SaveRequestDialogProps = {
   };
 };
 
-export function SaveRequestDialog({ open, onOpenChange, requestData }: SaveRequestDialogProps) {
+export function SaveRequestDialog({
+  open,
+  onOpenChange,
+  requestData,
+}: SaveRequestDialogProps) {
   const [name, setName] = useState(requestData.name || "");
   const [collectionId, setCollectionId] = useState<string>("");
   const [folderId, setFolderId] = useState<string>("");
@@ -58,7 +74,9 @@ export function SaveRequestDialog({ open, onOpenChange, requestData }: SaveReque
 
   const saveRequestMutation = useMutation({
     mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       const { error } = await supabase.from("api_requests").insert({
@@ -83,7 +101,11 @@ export function SaveRequestDialog({ open, onOpenChange, requestData }: SaveReque
       setFolderId("");
     },
     onError: (error: any) => {
-      toast({ title: "Failed to save request", description: error.message, variant: "destructive" });
+      toast({
+        title: "Failed to save request",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 

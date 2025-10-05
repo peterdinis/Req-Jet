@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,8 +23,10 @@ export function HistoryViewer() {
   });
 
   const getStatusColor = (status: number) => {
-    if (status >= 200 && status < 300) return "bg-green-500/20 text-green-400 border-green-500/30";
-    if (status >= 400 && status < 500) return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+    if (status >= 200 && status < 300)
+      return "bg-green-500/20 text-green-400 border-green-500/30";
+    if (status >= 400 && status < 500)
+      return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
     if (status >= 500) return "bg-red-500/20 text-red-400 border-red-500/30";
     return "bg-muted text-muted-foreground";
   };
@@ -65,7 +67,9 @@ export function HistoryViewer() {
         <ScrollArea className="h-[600px]">
           <div className="space-y-3">
             {history?.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No history yet</p>
+              <p className="text-muted-foreground text-center py-8">
+                No history yet
+              </p>
             ) : (
               history?.map((entry) => (
                 <div
@@ -74,21 +78,32 @@ export function HistoryViewer() {
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <Badge className={getMethodColor(entry.method)} variant="outline">
+                      <Badge
+                        className={getMethodColor(entry.method)}
+                        variant="outline"
+                      >
                         {entry.method}
                       </Badge>
-                      <Badge className={getStatusColor(entry.status_code || 0)} variant="outline">
+                      <Badge
+                        className={getStatusColor(entry.status_code || 0)}
+                        variant="outline"
+                      >
                         {entry.status_code || "ERR"}
                       </Badge>
                       <ArrowRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <span className="text-sm truncate font-mono">{entry.url}</span>
+                      <span className="text-sm truncate font-mono">
+                        {entry.url}
+                      </span>
                     </div>
                     <div className="text-xs text-muted-foreground whitespace-nowrap">
                       {entry.response_time ? `${entry.response_time}ms` : "-"}
                     </div>
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {format(new Date(entry.created_at as unknown as string), "MMM dd, yyyy HH:mm:ss")}
+                    {format(
+                      new Date(entry.created_at as unknown as string),
+                      "MMM dd, yyyy HH:mm:ss",
+                    )}
                   </div>
                 </div>
               ))

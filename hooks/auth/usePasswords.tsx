@@ -16,7 +16,9 @@ export const useUpdatePasswordMutation = () =>
   useMutation({
     mutationKey: ["updatePassword"],
     mutationFn: async ({ newPassword }: { newPassword: string }) => {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
       if (error) throw new Error(error.message);
     },
   });
