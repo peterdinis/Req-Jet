@@ -40,9 +40,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/supabase/client";
-import { CollectionDialog } from "./CollectionDialog";
-import { HistoryViewer } from "./HistoryViewer";
 import { useLogout } from "@/hooks/auth/useLogout";
+import { HistoryViewer } from "../history/HistoryViewer";
+import { CollectionDialog } from "../dialogs/CollectionDialog";
 
 type Collection = {
   id: string;
