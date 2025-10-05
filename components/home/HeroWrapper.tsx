@@ -4,6 +4,7 @@ import { FC } from "react";
 import { Button } from "@/components/ui/button";
 import { Zap, Send, FolderTree, Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { ModeToggle } from "../shared/ModeToggle";
 
 const HeroWrapper: FC = () => {
     const router = useRouter();
@@ -19,6 +20,7 @@ const HeroWrapper: FC = () => {
                         <span className="font-bold text-xl">API Tester</span>
                     </div>
                     <Button onClick={() => router.push("/auth")}>Get Started</Button>
+                    <ModeToggle />
                 </div>
             </nav>
 
