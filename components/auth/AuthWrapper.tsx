@@ -13,12 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Zap, Eye, EyeOff } from "lucide-react";
 
@@ -82,7 +77,10 @@ const AuthWrapper: FC = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
       if (error) throw error;
 
       toast({ title: "Welcome back!", description: "Successfully logged in." });
@@ -175,7 +173,9 @@ const AuthWrapper: FC = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
       if (error) throw error;
 
       toast({
@@ -218,15 +218,15 @@ const AuthWrapper: FC = () => {
               {isRecoveryMode
                 ? "Set New Password"
                 : showResetPassword
-                ? "Reset Password"
-                : "Get Started"}
+                  ? "Reset Password"
+                  : "Get Started"}
             </CardTitle>
             <CardDescription>
               {isRecoveryMode
                 ? "Enter your new password below"
                 : showResetPassword
-                ? "Enter your email to receive a password reset link"
-                : "Sign in or create an account to continue"}
+                  ? "Enter your email to receive a password reset link"
+                  : "Sign in or create an account to continue"}
             </CardDescription>
           </CardHeader>
 
@@ -373,7 +373,11 @@ const AuthWrapper: FC = () => {
                         </button>
                       </div>
                     </div>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={isLoading}
+                    >
                       {isLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -440,7 +444,11 @@ const AuthWrapper: FC = () => {
                         </button>
                       </div>
                     </div>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={isLoading}
+                    >
                       {isLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
