@@ -1,3 +1,4 @@
+// schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -5,4 +6,88 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id        String   @id @default(cuid()) @map("id")
+  email     String   @unique
+  full_name String?
+  avatar_url String?
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  collections Collection[]
+  folders     Folder[]
+  api_requests ApiRequest[]
+  request_history RequestHistory[]
+
+  @@map("profiles")
+}
+
+model Collection {
+  id          String   @id @default(cuid()) @map("id")
+  user_id     String
+  name        String
+  description String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
+
+  user    Profile @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  folders Folder[]
+  api_requests ApiRequest[]
+
+  @@map("collections")
+}
+
+model Folder {
+  id            String   @id @default(cuid()) @map("id")
+  collection_id String
+  user_id       String
+  name          String
+  created_at    DateTime @default(now())
+
+  collection   Collection @relation(fields: [collection_id], references: [id], onDelete: Cascade)
+  user         Profile    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  api_requests ApiRequest[]
+
+  @@map("folders")
+}
+
+model ApiRequest {
+  id            String   @id @default(cuid()) @map("id")
+  user_id       String
+  collection_id String?
+  folder_id     String?
+  name          String
+  method        String   @default("GET")
+  url           String
+  headers       Json?
+  body          String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @default(now())
+
+  user       Profile    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  collection Collection? @relation(fields: [collection_id], references: [id], onDelete: Cascade)
+  folder     Folder?    @relation(fields: [folder_id], references: [id], onDelete: Cascade)
+  request_history RequestHistory[]
+
+  @@map("api_requests")
+}
+
+model RequestHistory {
+  id               String   @id @default(cuid()) @map("id")
+  user_id          String
+  request_id       String?
+  method           String
+  url              String
+  status_code      Int?
+  response_time    Int?
+  response_body    String?
+  response_headers Json?
+  created_at       DateTime @default(now())
+
+  user    Profile    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  request ApiRequest? @relation(fields: [request_id], references: [id], onDelete: Cascade)
+
+  @@map("request_history")
 }
