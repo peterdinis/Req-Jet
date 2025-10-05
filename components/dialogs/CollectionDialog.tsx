@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/supabase/client";
+import { createId } from "@paralleldrive/cuid2";
 
 type Collection = {
   id: string;
@@ -64,7 +65,7 @@ export function CollectionDialog({
       } else {
         const { error } = await supabase
           .from("collections")
-          .insert({ user_id: user.id, name, description });
+          .insert({ id: createId(), user_id: user.id, name, description });
         if (error) throw error;
       }
     },
