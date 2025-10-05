@@ -63,7 +63,7 @@ type ApiRequest = {
   folder_id: string | null;
 };
 
-export function AppSidebar({ user, onRequestSelect }: { user: User | null; onRequestSelect?: (request: any) => void }) {
+export function DashboardSidebar({ user, onRequestSelect }: { user: User | null; onRequestSelect?: (request: any) => void }) {
   const [expandedCollections, setExpandedCollections] = useState<Set<string>>(new Set());
   const [collectionDialogOpen, setCollectionDialogOpen] = useState(false);
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);

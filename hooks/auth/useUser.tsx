@@ -17,17 +17,12 @@ export const useUser = () => {
             return session
         }
     })
-
-    // Spracovanie výsledku query cez useEffect
+    
     useEffect(() => {
         const session = query.data
         setUser(session?.user ?? null)
-        if (!session && !query.isLoading) {
-            router.push("/auth")
-        }
     }, [query.data, query.isLoading, router])
 
-    // Subscription na zmeny v auth stave
     useEffect(() => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setUser(session?.user ?? null)
