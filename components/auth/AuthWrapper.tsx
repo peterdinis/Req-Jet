@@ -13,29 +13,30 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Zap, Eye, EyeOff } from "lucide-react";
+import { useLoginMutation, useSignupMutation, useResetPasswordMutation, useUpdatePasswordMutation } from "@/hooks/auth/useAuth";
 
 const AuthWrapper: FC = () => {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [newPassword, setNewPassword] = useState<string>("");
-  const [fullName, setFullName] = useState<string>("");
-  const [showResetPassword, setShowResetPassword] = useState<boolean>(false);
-  const [isRecoveryMode, setIsRecoveryMode] = useState<boolean>(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [isRecoveryMode, setIsRecoveryMode] = useState(false);
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showNewPassword, setShowNewPassword] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   const router = useRouter();
   const { toast } = useToast();
+
+  // mutations
+  const loginMutation = useLoginMutation();
+  const signupMutation = useSignupMutation();
+  const resetPasswordMutation = useResetPasswordMutation();
+  const updatePasswordMutation = useUpdatePasswordMutation();
 
   /**
    * Handle Supabase redirect (signup confirmation / magic link / recovery).
@@ -47,26 +48,24 @@ const AuthWrapper: FC = () => {
     const type = hashParams.get("type");
 
     if (access_token && refresh_token) {
-      supabase.auth
-        .setSession({ access_token, refresh_token })
-        .then(({ error }) => {
-          if (error) {
-            toast({
-              title: "Authentication failed",
-              description: error.message,
-              variant: "destructive",
-            });
-          } else {
-            toast({
-              title: "Welcome!",
-              description:
-                type === "signup"
-                  ? "Your email has been confirmed."
-                  : "You are logged in.",
-            });
-            router.push("/dashboard");
-          }
-        });
+      supabase.auth.setSession({ access_token, refresh_token }).then(({ error }) => {
+        if (error) {
+          toast({
+            title: "Authentication failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Welcome!",
+            description:
+              type === "signup"
+                ? "Your email has been confirmed."
+                : "You are logged in.",
+          });
+          router.push("/dashboard");
+        }
+      });
     }
 
     if (type === "recovery") {
@@ -74,128 +73,104 @@ const AuthWrapper: FC = () => {
     }
   }, [router, toast]);
 
-  /**
-   * LOGIN
-   */
-  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
+  /** LOGIN */
+  const handleLogin = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-
-      toast({ title: "Welcome back!", description: "Successfully logged in." });
-      router.push("/dashboard");
-    } catch (err: any) {
-      toast({
-        title: "Login failed",
-        description: err.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  /**
-   * SIGNUP
-   */
-  const handleSignup = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { full_name: fullName },
-          emailRedirectTo: `${window.location.origin}/auth`,
+    loginMutation.mutate(
+      { email, password },
+      {
+        onSuccess: () => {
+          toast({ title: "Welcome back!", description: "Successfully logged in." });
+          router.push("/dashboard");
         },
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Account created!",
-        description: "Check your email to confirm your account.",
-      });
-
-      // Reset form + switch to login
-      setFullName("");
-      setPassword("");
-      setActiveTab("login");
-    } catch (err: any) {
-      toast({
-        title: "Signup failed",
-        description: err.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+        onError: (err: any) =>
+          toast({
+            title: "Login failed",
+            description: err.message,
+            variant: "destructive",
+          }),
+      }
+    );
   };
 
-  /**
-   * RESET PASSWORD (send reset email)
-   */
-  const handlePasswordReset = async (e: FormEvent<HTMLFormElement>) => {
+  /** SIGNUP */
+  const handleSignup = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth`,
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Reset email sent",
-        description: "Check your inbox for the password reset link.",
-      });
-      setShowResetPassword(false);
-    } catch (err: any) {
-      toast({
-        title: "Reset failed",
-        description: err.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    signupMutation.mutate(
+      { email, password, fullName },
+      {
+        onSuccess: () => {
+          toast({
+            title: "Account created!",
+            description: "Check your email to confirm your account.",
+          });
+          setFullName("");
+          setPassword("");
+          setActiveTab("login");
+        },
+        onError: (err: any) =>
+          toast({
+            title: "Signup failed",
+            description: err.message,
+            variant: "destructive",
+          }),
+      }
+    );
   };
 
-  /**
-   * UPDATE PASSWORD (recovery mode)
-   */
-  const handleUpdatePassword = async (e: FormEvent<HTMLFormElement>) => {
+  /** RESET PASSWORD */
+  const handlePasswordReset = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
-      if (error) throw error;
-
-      toast({
-        title: "Password updated",
-        description: "You can now log in with your new password.",
-      });
-
-      setIsRecoveryMode(false);
-      setNewPassword("");
-      router.push("/dashboard");
-    } catch (err: any) {
-      toast({
-        title: "Update failed",
-        description: err.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    resetPasswordMutation.mutate(
+      { email },
+      {
+        onSuccess: () => {
+          toast({
+            title: "Reset email sent",
+            description: "Check your inbox for the password reset link.",
+          });
+          setShowResetPassword(false);
+        },
+        onError: (err: any) =>
+          toast({
+            title: "Reset failed",
+            description: err.message,
+            variant: "destructive",
+          }),
+      }
+    );
   };
+
+  /** UPDATE PASSWORD (recovery mode) */
+  const handleUpdatePassword = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    updatePasswordMutation.mutate(
+      { newPassword },
+      {
+        onSuccess: () => {
+          toast({
+            title: "Password updated",
+            description: "You can now log in with your new password.",
+          });
+          setIsRecoveryMode(false);
+          setNewPassword("");
+          router.push("/dashboard");
+        },
+        onError: (err: any) =>
+          toast({
+            title: "Update failed",
+            description: err.message,
+            variant: "destructive",
+          }),
+      }
+    );
+  };
+
+  const isLoading =
+    loginMutation.isPending ||
+    signupMutation.isPending ||
+    resetPasswordMutation.isPending ||
+    updatePasswordMutation.isPending;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -206,9 +181,7 @@ const AuthWrapper: FC = () => {
             <Zap className="w-8 h-8 text-primary-foreground" />
           </div>
           <h1 className="text-3xl font-bold mb-2">API Testing Platform</h1>
-          <p className="text-muted-foreground">
-            Test, debug, and document your APIs
-          </p>
+          <p className="text-muted-foreground">Test, debug, and document your APIs</p>
         </div>
 
         {/* Card */}
