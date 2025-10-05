@@ -1,59 +1,96 @@
-"use client"
+"use client";
 
-import { useState, useEffect, FC } from "react";
+import { useState, useEffect, FC, FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Zap, Eye, EyeOff } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/supabase/client";
 
 const AuthWrapper: FC = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [showResetPassword, setShowResetPassword] = useState(false);
-  const [isRecoveryMode, setIsRecoveryMode] = useState(false);
-  const [activeTab, setActiveTab] = useState("login");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [newPassword, setNewPassword] = useState<string>("");
+  const [fullName, setFullName] = useState<string>("");
+  const [showResetPassword, setShowResetPassword] = useState<boolean>(false);
+  const [isRecoveryMode, setIsRecoveryMode] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showNewPassword, setShowNewPassword] = useState<boolean>(false);
+
   const router = useRouter();
   const { toast } = useToast();
 
+  /**
+   * Handle Supabase redirect (signup confirmation / magic link / recovery).
+   */
   useEffect(() => {
-    // Check if this is a password recovery link
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    if (hashParams.get('type') === 'recovery') {
+    const access_token = hashParams.get("access_token");
+    const refresh_token = hashParams.get("refresh_token");
+    const type = hashParams.get("type");
+
+    if (access_token && refresh_token) {
+      supabase.auth
+        .setSession({ access_token, refresh_token })
+        .then(({ error }) => {
+          if (error) {
+            toast({
+              title: "Authentication failed",
+              description: error.message,
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Welcome!",
+              description:
+                type === "signup"
+                  ? "Your email has been confirmed."
+                  : "You are logged in.",
+            });
+            router.push("/dashboard");
+          }
+        });
+    }
+
+    if (type === "recovery") {
       setIsRecoveryMode(true);
     }
-  }, []);
+  }, [router, toast]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  /**
+   * LOGIN
+   */
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
-      toast({
-        title: "Welcome back!",
-        description: "Successfully logged in.",
-      });
+      toast({ title: "Welcome back!", description: "Successfully logged in." });
       router.push("/dashboard");
-    } catch (error: any) {
+    } catch (err: any) {
       toast({
         title: "Login failed",
-        description: error.message,
+        description: err.message,
         variant: "destructive",
       });
     } finally {
@@ -61,7 +98,10 @@ const AuthWrapper: FC = () => {
     }
   };
 
-  const handleSignup = async (e: React.FormEvent) => {
+  /**
+   * SIGNUP
+   */
+  const handleSignup = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
@@ -70,10 +110,8 @@ const AuthWrapper: FC = () => {
         email,
         password,
         options: {
-          data: {
-            full_name: fullName,
-          },
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: { full_name: fullName },
+          emailRedirectTo: `${window.location.origin}/auth`,
         },
       });
 
@@ -81,15 +119,17 @@ const AuthWrapper: FC = () => {
 
       toast({
         title: "Account created!",
-        description: "You can now log in with your credentials.",
+        description: "Check your email to confirm your account.",
       });
-      setActiveTab("login");
+
+      // Reset form + switch to login
       setFullName("");
       setPassword("");
-    } catch (error: any) {
+      setActiveTab("login");
+    } catch (err: any) {
       toast({
         title: "Signup failed",
-        description: error.message,
+        description: err.message,
         variant: "destructive",
       });
     } finally {
@@ -97,7 +137,10 @@ const AuthWrapper: FC = () => {
     }
   };
 
-  const handlePasswordReset = async (e: React.FormEvent) => {
+  /**
+   * RESET PASSWORD (send reset email)
+   */
+  const handlePasswordReset = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
@@ -110,13 +153,13 @@ const AuthWrapper: FC = () => {
 
       toast({
         title: "Reset email sent",
-        description: "Check your email for the password reset link.",
+        description: "Check your inbox for the password reset link.",
       });
       setShowResetPassword(false);
-    } catch (error: any) {
+    } catch (err: any) {
       toast({
         title: "Reset failed",
-        description: error.message,
+        description: err.message,
         variant: "destructive",
       });
     } finally {
@@ -124,69 +167,72 @@ const AuthWrapper: FC = () => {
     }
   };
 
-  const handleUpdatePassword = async (e: React.FormEvent) => {
+  /**
+   * UPDATE PASSWORD (recovery mode)
+   */
+  const handleUpdatePassword = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
-
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
 
       toast({
         title: "Password updated",
-        description: "Your password has been successfully updated.",
+        description: "You can now log in with your new password.",
       });
-      
+
       setIsRecoveryMode(false);
+      setNewPassword("");
       router.push("/dashboard");
-    } catch (error: any) {
+    } catch (err: any) {
       toast({
         title: "Update failed",
-        description: error.message,
+        description: err.message,
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const toggleNewPasswordVisibility = () => {
-    setShowNewPassword(!showNewPassword);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md animate-fade-in">
+        {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent mb-4 animate-glow">
             <Zap className="w-8 h-8 text-primary-foreground" />
           </div>
           <h1 className="text-3xl font-bold mb-2">API Testing Platform</h1>
-          <p className="text-muted-foreground">Test, debug, and document your APIs</p>
+          <p className="text-muted-foreground">
+            Test, debug, and document your APIs
+          </p>
         </div>
 
+        {/* Card */}
         <Card className="border-border bg-card/50 backdrop-blur">
           <CardHeader>
             <CardTitle>
-              {isRecoveryMode ? "Set New Password" : showResetPassword ? "Reset Password" : "Get Started"}
+              {isRecoveryMode
+                ? "Set New Password"
+                : showResetPassword
+                ? "Reset Password"
+                : "Get Started"}
             </CardTitle>
             <CardDescription>
-              {isRecoveryMode 
-                ? "Enter your new password below" 
-                : showResetPassword 
-                ? "Enter your email to receive a password reset link" 
+              {isRecoveryMode
+                ? "Enter your new password below"
+                : showResetPassword
+                ? "Enter your email to receive a password reset link"
                 : "Sign in or create an account to continue"}
             </CardDescription>
           </CardHeader>
+
           <CardContent>
-            {isRecoveryMode ? (
+            {/* Recovery Mode */}
+            {isRecoveryMode && (
               <form onSubmit={handleUpdatePassword} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="new-password">New Password</Label>
@@ -204,9 +250,8 @@ const AuthWrapper: FC = () => {
                     />
                     <button
                       type="button"
-                      onClick={toggleNewPasswordVisibility}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                      disabled={isLoading}
+                      onClick={() => setShowNewPassword((s) => !s)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {showNewPassword ? (
                         <EyeOff className="w-4 h-4" />
@@ -227,7 +272,10 @@ const AuthWrapper: FC = () => {
                   )}
                 </Button>
               </form>
-            ) : showResetPassword ? (
+            )}
+
+            {/* Reset Password */}
+            {!isRecoveryMode && showResetPassword && (
               <form onSubmit={handlePasswordReset} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="reset-email">Email</Label>
@@ -251,9 +299,9 @@ const AuthWrapper: FC = () => {
                     "Send Reset Link"
                   )}
                 </Button>
-                <Button 
-                  type="button" 
-                  variant="ghost" 
+                <Button
+                  type="button"
+                  variant="ghost"
                   className="w-full"
                   onClick={() => setShowResetPassword(false)}
                   disabled={isLoading}
@@ -261,13 +309,21 @@ const AuthWrapper: FC = () => {
                   Back to Login
                 </Button>
               </form>
-            ) : (
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            )}
+
+            {/* Login & Signup Tabs */}
+            {!isRecoveryMode && !showResetPassword && (
+              <Tabs
+                value={activeTab}
+                onValueChange={(val) => setActiveTab(val as "login" | "signup")}
+                className="w-full"
+              >
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="login">Login</TabsTrigger>
                   <TabsTrigger value="signup">Sign Up</TabsTrigger>
                 </TabsList>
 
+                {/* Login */}
                 <TabsContent value="login">
                   <form onSubmit={handleLogin} className="space-y-4">
                     <div className="space-y-2">
@@ -289,7 +345,6 @@ const AuthWrapper: FC = () => {
                           type="button"
                           onClick={() => setShowResetPassword(true)}
                           className="text-xs text-primary hover:underline"
-                          disabled={isLoading}
                         >
                           Forgot password?
                         </button>
@@ -307,9 +362,8 @@ const AuthWrapper: FC = () => {
                         />
                         <button
                           type="button"
-                          onClick={togglePasswordVisibility}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                          disabled={isLoading}
+                          onClick={() => setShowPassword((s) => !s)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                         >
                           {showPassword ? (
                             <EyeOff className="w-4 h-4" />
@@ -332,6 +386,7 @@ const AuthWrapper: FC = () => {
                   </form>
                 </TabsContent>
 
+                {/* Signup */}
                 <TabsContent value="signup">
                   <form onSubmit={handleSignup} className="space-y-4">
                     <div className="space-y-2">
@@ -374,9 +429,8 @@ const AuthWrapper: FC = () => {
                         />
                         <button
                           type="button"
-                          onClick={togglePasswordVisibility}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                          disabled={isLoading}
+                          onClick={() => setShowPassword((s) => !s)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                         >
                           {showPassword ? (
                             <EyeOff className="w-4 h-4" />
