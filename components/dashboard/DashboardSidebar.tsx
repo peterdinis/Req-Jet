@@ -42,6 +42,7 @@ import {
 import { supabase } from "@/supabase/client";
 import { CollectionDialog } from "./CollectionDialog";
 import { HistoryViewer } from "./HistoryViewer";
+import { useLogout } from "@/hooks/auth/useLogout";
 
 type Collection = {
   id: string;
@@ -123,9 +124,7 @@ export function DashboardSidebar({ user, onRequestSelect }: { user: User | null;
     },
   });
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-  };
+  const handleLogout = useLogout();
 
   const toggleCollection = (id: string) => {
     const newExpanded = new Set(expandedCollections);
@@ -294,7 +293,9 @@ export function DashboardSidebar({ user, onRequestSelect }: { user: User | null;
           <Button
             variant="outline"
             className="w-full justify-start gap-2"
-            onClick={handleLogout}
+            onClick={() => {
+              handleLogout.logout();
+            }}
           >
             <LogOut className="h-4 w-4" />
             Logout
