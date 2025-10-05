@@ -16,7 +16,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Zap, Eye, EyeOff } from "lucide-react";
-import { useLoginMutation, useSignupMutation, useResetPasswordMutation, useUpdatePasswordMutation } from "@/hooks/auth/useAuth";
+import { useLoginMutation } from "@/hooks/auth/useLogin";
+import { useSignupMutation } from "@/hooks/auth/useRegister";
+import { useResetPasswordMutation, useUpdatePasswordMutation } from "@/hooks/auth/usePasswords";
 
 const AuthWrapper: FC = () => {
   const [email, setEmail] = useState("");
