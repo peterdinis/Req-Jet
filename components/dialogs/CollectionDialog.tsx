@@ -55,7 +55,7 @@ export function CollectionDialog({
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
-      
+
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("id")
