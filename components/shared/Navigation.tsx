@@ -1,7 +1,7 @@
 "use client";
 
-import { Zap, Menu, X } from "lucide-react";
-import { FC, useState } from "react";
+import { Zap, Menu} from "lucide-react";
+import { FC } from "react";
 import { Button } from "../ui/button";
 import { ModeToggle } from "./ModeToggle";
 import { useRouter } from "next/navigation";
@@ -102,7 +102,7 @@ const Navigation: FC = () => {
               <Zap className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="font-bold text-xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              API Tester
+             Req Jet
             </span>
           </motion.div>
 
@@ -122,7 +122,7 @@ const Navigation: FC = () => {
                       <Zap className="w-5 h-5 text-primary-foreground" />
                     </div>
                     <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                      API Tester
+                      Req Jet
                     </span>
                   </SheetTitle>
                   <SheetDescription>

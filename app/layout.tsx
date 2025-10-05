@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "API Tester - Postman Clone",
+  title: "Req Jet - Postman Clone",
   description: "A lightweight Postman-like UI for testing APIs built with Next.js and Supabase.",
   authors: [{ name: "Your Name" }],
   openGraph: {
