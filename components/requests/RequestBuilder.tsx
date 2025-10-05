@@ -1,3 +1,5 @@
+"use client"
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,10 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Send, Plus, Trash2, Loader2, Save, Play } from "lucide-react";
-import { ResponseViewer } from "./ResponseViewer";
 import Editor from "@monaco-editor/react";
 import { supabase } from "@/supabase/client";
 import { SaveRequestDialog } from "./SaveRequestDialog";
+import { ResponseViewer } from "../response/ResponseViewer";
 
 type Header = {
   key: string;
