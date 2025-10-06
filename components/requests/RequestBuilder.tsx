@@ -16,44 +16,12 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Send, Plus, Trash2, Loader2, Save, Play } from "lucide-react";
 import Editor from "@monaco-editor/react";
-import { supabase } from "@/supabase/client";
 import { SaveRequestDialog } from "./SaveRequestDialog";
 import { ResponseViewer } from "../response/ResponseViewer";
 import { useMonacoTheme } from "@/hooks/shared/useMonacoTheme";
+import { KeyValue } from "@/types/RequestsTypes";
+import { requestReducer } from "./reducer";
 
-// --- TYPES ---
-type KeyValue = { key: string; value: string; enabled?: boolean };
-
-type RequestState = {
-  method: string;
-  url: string;
-  headers: KeyValue[];
-  queryParams: KeyValue[];
-  authType: string;
-  authToken: string;
-  body: string;
-  bodyType: string;
-  requestType: "rest" | "graphql";
-  graphqlQuery: string;
-  graphqlVariables: string;
-  testScript: string;
-};
-
-// --- REDUCER ---
-function requestReducer(state: RequestState, action: any): RequestState {
-  switch (action.type) {
-    case "SET_FIELD":
-      return { ...state, [action.field]: action.value };
-    case "SET_HEADERS":
-      return { ...state, headers: action.value };
-    case "SET_QUERIES":
-      return { ...state, queryParams: action.value };
-    default:
-      return state;
-  }
-}
-
-// --- GENERIC COMPONENT FOR HEADERS / QUERY PARAMS ---
 function KeyValueList({
   items,
   onChange,
@@ -117,7 +85,6 @@ function KeyValueList({
   );
 }
 
-// --- MAIN COMPONENT ---
 export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
   const editorTheme = useMonacoTheme();
   const { toast } = useToast();

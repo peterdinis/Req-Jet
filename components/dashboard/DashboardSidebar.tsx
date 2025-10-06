@@ -48,27 +48,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/supabase/client";
 import { CollectionDialog } from "../dialogs/CollectionDialog";
 import { ModeToggle } from "../shared/ModeToggle";
-
-type Collection = {
-  id: string;
-  name: string;
-  description: string | null;
-};
-
-type Folder = {
-  id: string;
-  name: string;
-  collection_id: string;
-  position: number;
-};
-
-type ApiRequest = {
-  id: string;
-  name: string;
-  method: string;
-  collection_id: string | null;
-  folder_id: string | null;
-};
+import { Collection } from "@/types/CollectionTypes";
 
 export function DashboardSidebar({
   user,
@@ -87,7 +67,6 @@ export function DashboardSidebar({
   const [collectionToDelete, setCollectionToDelete] = useState<string | null>(
     null,
   );
-  const [showHistory, setShowHistory] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -160,26 +139,6 @@ export function DashboardSidebar({
     }
     setExpandedCollections(newExpanded);
   };
-
-  if (showHistory) {
-    return (
-      <div className="w-full h-full flex flex-col">
-        <div className="border-b border-border p-4 flex items-center justify-between">
-          <h2 className="font-semibold flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Request History
-          </h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowHistory(false)}
-          >
-            Back
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <>
