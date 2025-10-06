@@ -34,7 +34,6 @@ export const metadata: Metadata = {
     title: "Req-Jet - Postman Clone",
     description:
       "A lightweight Postman-like UI for testing APIs built with Next.js and Supabase.",
-    images: ["/og-image.png"],
   },
 };
 
@@ -44,7 +43,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning suppressContentEditableWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
@@ -53,6 +52,7 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
+          storageKey="req-jet-storage-key"
         >
           <QueryProvider>
             {children}
