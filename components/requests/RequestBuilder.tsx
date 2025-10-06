@@ -19,6 +19,7 @@ import Editor from "@monaco-editor/react";
 import { supabase } from "@/supabase/client";
 import { SaveRequestDialog } from "./SaveRequestDialog";
 import { ResponseViewer } from "../response/ResponseViewer";
+import { useMonacoTheme } from "@/hooks/shared/useMonacoTheme";
 
 type Header = {
   key: string;
@@ -38,6 +39,7 @@ type RequestBuilderProps = {
 export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
   const [method, setMethod] = useState("GET");
   const [url, setUrl] = useState("");
+  const editorTheme = useMonacoTheme();
   const [headers, setHeaders] = useState<Header[]>([{ key: "", value: "" }]);
   const [queryParams, setQueryParams] = useState<QueryParam[]>([
     { key: "", value: "", enabled: true },
@@ -387,7 +389,7 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
                           defaultLanguage="graphql"
                           value={graphqlQuery}
                           onChange={(value) => setGraphqlQuery(value || "")}
-                          theme="vs-dark"
+                          theme={editorTheme}
                           options={{
                             minimap: { enabled: false },
                             fontSize: 13,
@@ -405,7 +407,7 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
                           onChange={(value) =>
                             setGraphqlVariables(value || "{}")
                           }
-                          theme="vs-dark"
+                          theme={editorTheme}
                           options={{
                             minimap: { enabled: false },
                             fontSize: 13,
@@ -569,7 +571,7 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
                           }
                           value={body}
                           onChange={(value) => setBody(value || "")}
-                          theme="vs-dark"
+                          theme={editorTheme}
                           options={{
                             minimap: { enabled: false },
                             fontSize: 13,
@@ -607,7 +609,7 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
                         defaultLanguage="javascript"
                         value={testScript}
                         onChange={(value) => setTestScript(value || "")}
-                        theme="vs-dark"
+                        theme={editorTheme}
                         options={{
                           minimap: { enabled: false },
                           fontSize: 13,
