@@ -20,31 +20,18 @@ import { supabase } from "@/supabase/client";
 import { SaveRequestDialog } from "./SaveRequestDialog";
 import { ResponseViewer } from "../response/ResponseViewer";
 import { useMonacoTheme } from "@/hooks/shared/useMonacoTheme";
-import { AuthError } from "@supabase/supabase-js";
 
-type Header = {
-  key: string;
-  value: string;
-};
+type Header = { key: string; value: string };
+type QueryParam = { key: string; value: string; enabled: boolean };
 
-type QueryParam = {
-  key: string;
-  value: string;
-  enabled: boolean;
-};
-
-type RequestBuilderProps = {
-  selectedRequest?: any;
-};
+type RequestBuilderProps = { selectedRequest?: any };
 
 export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
   const [method, setMethod] = useState("GET");
   const [url, setUrl] = useState("");
   const editorTheme = useMonacoTheme();
   const [headers, setHeaders] = useState<Header[]>([{ key: "", value: "" }]);
-  const [queryParams, setQueryParams] = useState<QueryParam[]>([
-    { key: "", value: "", enabled: true },
-  ]);
+  const [queryParams, setQueryParams] = useState<QueryParam[]>([{ key: "", value: "", enabled: true }]);
   const [authType, setAuthType] = useState("none");
   const [authToken, setAuthToken] = useState("");
   const [body, setBody] = useState("");
@@ -53,7 +40,7 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
   const [graphqlQuery, setGraphqlQuery] = useState("");
   const [graphqlVariables, setGraphqlVariables] = useState("{}");
   const [testScript, setTestScript] = useState(
-    "// Test script\n// Available: response, responseTime\n// Example:\n// if (response.status === 200) {\n//   console.log('Success!');\n// }",
+    "// Test script\n// Available: response, responseTime\n// Example:\n// if (response.status === 200) {\n//   console.log('Success!');\n// }"
   );
   const [testResults, setTestResults] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -75,112 +62,54 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
     }
   }, [selectedRequest]);
 
-  const addHeader = () => {
-    setHeaders([...headers, { key: "", value: "" }]);
-  };
-
-  const removeHeader = (index: number) => {
-    setHeaders(headers.filter((_, i) => i !== index));
-  };
-
-  const updateHeader = (
-    index: number,
-    field: "key" | "value",
-    value: string,
-  ) => {
+  // --- Headers ---
+  const addHeader = () => setHeaders([...headers, { key: "", value: "" }]);
+  const removeHeader = (index: number) => setHeaders(headers.filter((_, i) => i !== index));
+  const updateHeader = (index: number, field: "key" | "value", value: string) => {
     const newHeaders = [...headers];
     newHeaders[index][field] = value;
     setHeaders(newHeaders);
   };
 
-  const addQueryParam = () => {
-    setQueryParams([...queryParams, { key: "", value: "", enabled: true }]);
-  };
-
-  const removeQueryParam = (index: number) => {
-    setQueryParams(queryParams.filter((_, i) => i !== index));
-  };
-
-  const updateQueryParam = (
-    index: number,
-    field: keyof QueryParam,
-    value: string | boolean,
-  ) => {
+  // --- Query Params ---
+  const addQueryParam = () => setQueryParams([...queryParams, { key: "", value: "", enabled: true }]);
+  const removeQueryParam = (index: number) => setQueryParams(queryParams.filter((_, i) => i !== index));
+  const updateQueryParam = (index: number, field: keyof QueryParam, value: string | boolean) => {
     const newParams = [...queryParams];
-    if (field === "enabled" && typeof value === "boolean") {
-      newParams[index].enabled = value;
-    } else if (
-      (field === "key" || field === "value") &&
-      typeof value === "string"
-    ) {
-      newParams[index][field] = value;
-    }
+    if (field === "enabled" && typeof value === "boolean") newParams[index].enabled = value;
+    else if ((field === "key" || field === "value") && typeof value === "string") newParams[index][field] = value;
     setQueryParams(newParams);
   };
 
   const buildUrl = () => {
     if (!url) return "";
-    const enabledParams = queryParams.filter(
-      (p) => p.enabled && p.key && p.value,
-    );
+    const enabledParams = queryParams.filter((p) => p.enabled && p.key && p.value);
     if (enabledParams.length === 0) return url;
-
     const params = new URLSearchParams();
     enabledParams.forEach((p) => params.append(p.key, p.value));
     return `${url}?${params.toString()}`;
   };
 
-  const runTests = (responseData: { status: number; statusText: string; headers: { [k: string]: string; }; data: unknown; }, responseTime: number) => {
+  // --- Test script runner ---
+  const runTests = (responseData: any, responseTime: number) => {
     try {
       const logs: string[] = [];
       const originalConsoleLog = console.log;
-
-      // Override console.log to capture output
-      console.log = (...args: unknown[]) => {
-        logs.push(
-          args
-            .map((a) =>
-              typeof a === "object" ? JSON.stringify(a, null, 2) : String(a),
-            )
-            .join(" "),
-        );
-      };
-
-      // Execute the test script
-      const testFunction = new Function(
-        "response",
-        "responseTime",
-        "console",
-        testScript,
-      );
+      console.log = (...args: unknown[]) => logs.push(args.map(a => (typeof a === "object" ? JSON.stringify(a, null, 2) : String(a))).join(" "));
+      const testFunction = new Function("response", "responseTime", "console", testScript);
       testFunction(responseData, responseTime, console);
-
-      // Restore original console.log
       console.log = originalConsoleLog;
-
-      const result =
-        logs.length > 0
-          ? logs.join("\n")
-          : "Tests completed successfully (no console output)";
+      const result = logs.length > 0 ? logs.join("\n") : "Tests completed successfully (no console output)";
       setTestResults(result);
       toast({ title: "Tests executed" });
     } catch (error) {
-      const errorMsg =
-        error && typeof error === "object" && "message" in error
-          ? `Test error: ${(error as { message: string }).message}`
-          : "Test error: Unknown error";
-      setTestResults(errorMsg);
-      toast({
-        title: "Test execution failed",
-        description:
-          error && typeof error === "object" && "message" in error
-            ? (error as { message: string }).message
-            : "Unknown error",
-        variant: "destructive",
-      });
+      const msg = error && typeof error === "object" && "message" in error ? (error as { message: string }).message : "Unknown error";
+      setTestResults(`Test error: ${msg}`);
+      toast({ title: "Test execution failed", description: msg, variant: "destructive" });
     }
   };
 
+  // --- Send request ---
   const sendRequest = async () => {
     const finalUrl = buildUrl();
     if (!finalUrl) {
@@ -194,41 +123,19 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
 
     try {
       const requestHeaders: Record<string, string> = {};
+      headers.forEach((h) => { if (h.key && h.value) requestHeaders[h.key] = h.value; });
+      if (authType === "bearer" && authToken) requestHeaders["Authorization"] = `Bearer ${authToken}`;
+      else if (authType === "basic" && authToken) requestHeaders["Authorization"] = `Basic ${authToken}`;
 
-      // Add custom headers
-      headers.forEach((h) => {
-        if (h.key && h.value) {
-          requestHeaders[h.key] = h.value;
-        }
-      });
+      const options: RequestInit = { method: requestType === "graphql" ? "POST" : method, headers: requestHeaders };
 
-      // Add authorization header
-      if (authType === "bearer" && authToken) {
-        requestHeaders["Authorization"] = `Bearer ${authToken}`;
-      } else if (authType === "basic" && authToken) {
-        requestHeaders["Authorization"] = `Basic ${authToken}`;
-      }
-
-      const options: RequestInit = {
-        method: requestType === "graphql" ? "POST" : method,
-        headers: requestHeaders,
-      };
-
-      // Handle GraphQL or REST body
       if (requestType === "graphql") {
         requestHeaders["Content-Type"] = "application/json";
-        options.body = JSON.stringify({
-          query: graphqlQuery,
-          variables: JSON.parse(graphqlVariables || "{}"),
-        });
+        options.body = JSON.stringify({ query: graphqlQuery, variables: JSON.parse(graphqlVariables || "{}") });
       } else if (["POST", "PUT", "PATCH"].includes(method) && body) {
-        if (bodyType === "json") {
-          requestHeaders["Content-Type"] = "application/json";
-        } else if (bodyType === "xml") {
-          requestHeaders["Content-Type"] = "application/xml";
-        } else if (bodyType === "text") {
-          requestHeaders["Content-Type"] = "text/plain";
-        }
+        if (bodyType === "json") requestHeaders["Content-Type"] = "application/json";
+        else if (bodyType === "xml") requestHeaders["Content-Type"] = "application/xml";
+        else if (bodyType === "text") requestHeaders["Content-Type"] = "text/plain";
         options.body = body;
       }
 
@@ -238,66 +145,31 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
       setResponseTime(reqTime);
 
       const contentType = res.headers.get("content-type");
-      let data;
+      const data = contentType?.includes("application/json") ? await res.json() : await res.text();
 
-      if (contentType?.includes("application/json")) {
-        data = await res.json();
-      } else {
-        data = await res.text();
-      }
-
-      const responseData = {
-        status: res.status,
-        statusText: res.statusText,
-        headers: Object.fromEntries(res.headers.entries()),
-        data,
-      };
-
+      const responseData = { status: res.status, statusText: res.statusText, headers: Object.fromEntries(res.headers.entries()), data };
       setResponse(responseData);
 
-      // Run tests if test script exists
-      if (
-        testScript &&
-        testScript.trim() &&
-        !testScript.includes("// Test script")
-      ) {
-        runTests(responseData, reqTime);
-      }
+      if (testScript && testScript.trim() && !testScript.includes("// Test script")) runTests(responseData, reqTime);
 
-      // Save to history
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        await supabase.from("request_history").insert({
-          user_id: user.id,
-          url: finalUrl,
-          method: requestType === "graphql" ? "GRAPHQL" : method,
-          status_code: res.status,
-          response_time: reqTime,
-          response_body: typeof data === "string" ? data : JSON.stringify(data),
-          response_headers: Object.fromEntries(res.headers.entries()),
-        });
-      }
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) await supabase.from("request_history").insert({
+        user_id: user.id,
+        url: finalUrl,
+        method: requestType === "graphql" ? "GRAPHQL" : method,
+        status_code: res.status,
+        response_time: reqTime,
+        response_body: typeof data === "string" ? data : JSON.stringify(data),
+        response_headers: Object.fromEntries(res.headers.entries()),
+      });
 
       toast({ title: "Request sent successfully" });
     } catch (error) {
       const endTime = Date.now();
       setResponseTime(endTime - startTime);
-      toast({
-        title: "Request failed",
-        description:
-          error && typeof error === "object" && "message" in error
-            ? (error as { message: string }).message
-            : "Unknown error",
-        variant: "destructive",
-      });
-      setResponse({
-        error:
-          error && typeof error === "object" && "message" in error
-            ? (error as { message: string }).message
-            : "Unknown error",
-      });
+      const msg = error && typeof error === "object" && "message" in error ? (error as { message: string }).message : "Unknown error";
+      toast({ title: "Request failed", description: msg, variant: "destructive" });
+      setResponse({ error: msg });
     } finally {
       setIsLoading(false);
     }
@@ -306,24 +178,14 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)]">
       <div className="border-b border-border p-4 space-y-3">
-        <div className="flex gap-2 items-center">
-          <Select
-            value={requestType}
-            onValueChange={(v) => setRequestType(v as "rest" | "graphql")}
-          >
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="rest">REST</SelectItem>
-              <SelectItem value="graphql">GraphQL</SelectItem>
-            </SelectContent>
+        <div className="flex flex-wrap gap-2 items-center">
+          <Select value={requestType} onValueChange={(v) => setRequestType(v as "rest" | "graphql")}>
+            <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+            <SelectContent><SelectItem value="rest">REST</SelectItem><SelectItem value="graphql">GraphQL</SelectItem></SelectContent>
           </Select>
           {requestType === "rest" && (
             <Select value={method} onValueChange={setMethod}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
+              <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="GET">GET</SelectItem>
                 <SelectItem value="POST">POST</SelectItem>
@@ -335,235 +197,112 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
               </SelectContent>
             </Select>
           )}
-          <Input
-            placeholder="https://api.example.com/endpoint"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            className="flex-1"
-          />
+          <Input placeholder="https://api.example.com/endpoint" value={url} onChange={(e) => setUrl(e.target.value)} className="flex-1 min-w-[200px]" />
           <Button onClick={sendRequest} disabled={isLoading} className="gap-2">
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-            Send
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Send
           </Button>
-          <Button
-            variant="outline"
-            className="gap-2"
-            onClick={() => setSaveDialogOpen(true)}
-          >
-            <Save className="h-4 w-4" />
-            Save
+          <Button variant="outline" className="gap-2" onClick={() => setSaveDialogOpen(true)}>
+            <Save className="h-4 w-4" /> Save
           </Button>
         </div>
-        {queryParams.some((p) => p.enabled && p.key && p.value) &&
-          requestType === "rest" && (
-            <div className="text-sm text-muted-foreground font-mono bg-muted px-3 py-2 rounded">
-              {buildUrl()}
-            </div>
-          )}
+        {queryParams.some((p) => p.enabled && p.key && p.value) && requestType === "rest" && (
+          <div className="text-sm text-muted-foreground font-mono bg-muted px-3 py-2 rounded">{buildUrl()}</div>
+        )}
       </div>
 
       <div className="flex-1 overflow-auto">
         <div className="grid lg:grid-cols-2 gap-4 p-4 h-full">
           <Card className="flex flex-col">
-            <CardHeader>
-              <CardTitle>Request</CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 overflow-auto">
-              <Tabs
-                defaultValue={requestType === "graphql" ? "graphql" : "params"}
-                className="w-full"
-              >
+            <CardHeader><CardTitle>Request</CardTitle></CardHeader>
+            <CardContent className="flex-1 flex flex-col overflow-auto">
+              <Tabs defaultValue={requestType === "graphql" ? "graphql" : "params"} className="w-full flex-1 flex flex-col">
                 <TabsList className="grid w-full grid-cols-6">
-                  {requestType === "rest" && (
-                    <TabsTrigger value="params">Params</TabsTrigger>
-                  )}
-                  {requestType === "graphql" && (
-                    <TabsTrigger value="graphql">GraphQL</TabsTrigger>
-                  )}
+                  {requestType === "rest" && <TabsTrigger value="params">Params</TabsTrigger>}
+                  {requestType === "graphql" && <TabsTrigger value="graphql">GraphQL</TabsTrigger>}
                   <TabsTrigger value="auth">Auth</TabsTrigger>
                   <TabsTrigger value="headers">Headers</TabsTrigger>
-                  {requestType === "rest" && (
-                    <TabsTrigger value="body">Body</TabsTrigger>
-                  )}
+                  {requestType === "rest" && <TabsTrigger value="body">Body</TabsTrigger>}
                   <TabsTrigger value="tests">Tests</TabsTrigger>
                 </TabsList>
 
                 {requestType === "graphql" && (
-                  <TabsContent value="graphql" className="space-y-4">
-                    <div className="space-y-2">
+                  <TabsContent value="graphql" className="space-y-4 flex-1 flex flex-col overflow-auto">
+                    <div className="space-y-2 flex flex-col flex-1">
                       <Label>Query</Label>
-                      <div className="border border-border rounded-lg overflow-hidden">
-                        <Editor
-                          height="250px"
-                          defaultLanguage="graphql"
-                          value={graphqlQuery}
-                          onChange={(value) => setGraphqlQuery(value || "")}
-                          theme={editorTheme}
-                          options={{
-                            minimap: { enabled: false },
-                            fontSize: 13,
-                          }}
-                        />
+                      <div className="flex-1 border border-border rounded-lg overflow-hidden">
+                        <Editor defaultLanguage="graphql" value={graphqlQuery} onChange={(v) => setGraphqlQuery(v || "")} theme={editorTheme} options={{ minimap: { enabled: false }, fontSize: 13, automaticLayout: true }} height="100%" />
                       </div>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 flex flex-col flex-1">
                       <Label>Variables</Label>
-                      <div className="border border-border rounded-lg overflow-hidden">
-                        <Editor
-                          height="150px"
-                          defaultLanguage="json"
-                          value={graphqlVariables}
-                          onChange={(value) =>
-                            setGraphqlVariables(value || "{}")
-                          }
-                          theme={editorTheme}
-                          options={{
-                            minimap: { enabled: false },
-                            fontSize: 13,
-                          }}
-                        />
+                      <div className="flex-1 border border-border rounded-lg overflow-hidden">
+                        <Editor defaultLanguage="json" value={graphqlVariables} onChange={(v) => setGraphqlVariables(v || "{}")} theme={editorTheme} options={{ minimap: { enabled: false }, fontSize: 13, automaticLayout: true }} height="100%" />
                       </div>
                     </div>
                   </TabsContent>
                 )}
 
                 {requestType === "rest" && (
-                  <TabsContent value="params" className="space-y-4">
-                    <div className="space-y-2">
-                      {queryParams.map((param, index) => (
-                        <div key={index} className="flex gap-2 items-center">
-                          <input
-                            type="checkbox"
-                            checked={param.enabled}
-                            onChange={(e) =>
-                              updateQueryParam(
-                                index,
-                                "enabled",
-                                e.target.checked,
-                              )
-                            }
-                            className="w-4 h-4"
-                          />
-                          <Input
-                            placeholder="Key"
-                            value={param.key}
-                            onChange={(e) =>
-                              updateQueryParam(index, "key", e.target.value)
-                            }
-                            className="flex-1"
-                          />
-                          <Input
-                            placeholder="Value"
-                            value={param.value}
-                            onChange={(e) =>
-                              updateQueryParam(index, "value", e.target.value)
-                            }
-                            className="flex-1"
-                          />
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeQueryParam(index)}
-                            disabled={queryParams.length === 1}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={addQueryParam}
-                      className="w-full gap-2"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Add Parameter
+                  <TabsContent value="params" className="space-y-4 flex-1 overflow-auto">
+                    {queryParams.map((param, index) => (
+                      <div key={index} className="flex gap-2 items-center">
+                        <input type="checkbox" checked={param.enabled} onChange={(e) => updateQueryParam(index, "enabled", e.target.checked)} className="w-4 h-4" />
+                        <Input placeholder="Key" value={param.key} onChange={(e) => updateQueryParam(index, "key", e.target.value)} className="flex-1" />
+                        <Input placeholder="Value" value={param.value} onChange={(e) => updateQueryParam(index, "value", e.target.value)} className="flex-1" />
+                        <Button variant="ghost" size="icon" onClick={() => removeQueryParam(index)} disabled={queryParams.length === 1}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button variant="outline" onClick={addQueryParam} className="w-full gap-2">
+                      <Plus className="h-4 w-4" /> Add Parameter
                     </Button>
                   </TabsContent>
                 )}
 
-                <TabsContent value="auth" className="space-y-4">
+                <TabsContent value="auth" className="space-y-4 flex-1 overflow-auto">
                   <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="p-2">Auth Type</Label>
-                      <Select value={authType} onValueChange={setAuthType}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">No Auth</SelectItem>
-                          <SelectItem value="bearer">Bearer Token</SelectItem>
-                          <SelectItem value="basic">Basic Auth</SelectItem>
-                          <SelectItem value="apikey">API Key</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <Label className="p-2">Auth Type</Label>
+                    <Select value={authType} onValueChange={setAuthType}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No Auth</SelectItem>
+                        <SelectItem value="bearer">Bearer Token</SelectItem>
+                        <SelectItem value="basic">Basic Auth</SelectItem>
+                        <SelectItem value="apikey">API Key</SelectItem>
+                      </SelectContent>
+                    </Select>
                     {authType !== "none" && (
                       <div className="space-y-2">
                         <Label>Token</Label>
-                        <Input
-                          type="password"
-                          placeholder="Enter your token"
-                          value={authToken}
-                          onChange={(e) => setAuthToken(e.target.value)}
-                        />
+                        <Input type="password" placeholder="Enter your token" value={authToken} onChange={(e) => setAuthToken(e.target.value)} />
                       </div>
                     )}
                   </div>
                 </TabsContent>
 
-                <TabsContent value="headers" className="space-y-4">
+                <TabsContent value="headers" className="space-y-4 flex-1 overflow-auto">
                   {headers.map((header, index) => (
                     <div key={index} className="flex gap-2 items-center">
-                      <Input
-                        placeholder="Key"
-                        value={header.key}
-                        onChange={(e) =>
-                          updateHeader(index, "key", e.target.value)
-                        }
-                        className="flex-1"
-                      />
-                      <Input
-                        placeholder="Value"
-                        value={header.value}
-                        onChange={(e) =>
-                          updateHeader(index, "value", e.target.value)
-                        }
-                        className="flex-1"
-                      />
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeHeader(index)}
-                        disabled={headers.length === 1}
-                      >
+                      <Input placeholder="Key" value={header.key} onChange={(e) => updateHeader(index, "key", e.target.value)} className="flex-1" />
+                      <Input placeholder="Value" value={header.value} onChange={(e) => updateHeader(index, "value", e.target.value)} className="flex-1" />
+                      <Button variant="ghost" size="icon" onClick={() => removeHeader(index)} disabled={headers.length === 1}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   ))}
-                  <Button
-                    variant="outline"
-                    onClick={addHeader}
-                    className="w-full gap-2"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Add Header
+                  <Button variant="outline" onClick={addHeader} className="w-full gap-2">
+                    <Plus className="h-4 w-4" /> Add Header
                   </Button>
                 </TabsContent>
 
                 {requestType === "rest" && (
-                  <TabsContent value="body" className="space-y-4">
-                    <div className="space-y-2">
+                  <TabsContent value="body" className="space-y-4 flex-1 flex flex-col overflow-auto">
+                    <div className="space-y-2 flex flex-col flex-1">
                       <div className="flex gap-2 items-center">
                         <Label>Body Type</Label>
                         <Select value={bodyType} onValueChange={setBodyType}>
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
+                          <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="json">JSON</SelectItem>
                             <SelectItem value="xml">XML</SelectItem>
@@ -572,18 +311,11 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="border border-border rounded-lg overflow-hidden">
+                      <div className="flex-1 border border-border rounded-lg overflow-hidden">
                         <Editor
-                          height="300px"
-                          defaultLanguage={
-                            bodyType === "json"
-                              ? "json"
-                              : bodyType === "xml"
-                                ? "xml"
-                                : "plaintext"
-                          }
+                          defaultLanguage={bodyType === "json" ? "json" : bodyType === "xml" ? "xml" : "plaintext"}
                           value={body}
-                          onChange={(value) => setBody(value || "")}
+                          onChange={(v) => setBody(v || "")}
                           theme={editorTheme}
                           options={{
                             minimap: { enabled: false },
@@ -593,48 +325,35 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
                             scrollBeyondLastLine: false,
                             automaticLayout: true,
                           }}
+                          height="100%"
                         />
                       </div>
                     </div>
                   </TabsContent>
                 )}
 
-                <TabsContent value="tests" className="space-y-4">
-                  <div className="space-y-2">
+                <TabsContent value="tests" className="space-y-4 flex-1 flex flex-col overflow-auto">
+                  <div className="space-y-2 flex flex-col flex-1">
                     <div className="flex items-center justify-between">
                       <Label>Test Script</Label>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          response && runTests(response, responseTime)
-                        }
-                        disabled={!response}
-                        className="gap-2"
-                      >
-                        <Play className="h-3 w-3" />
-                        Run Tests
+                      <Button variant="outline" size="sm" onClick={() => response && runTests(response, responseTime)} disabled={!response} className="gap-2">
+                        <Play className="h-3 w-3" /> Run Tests
                       </Button>
                     </div>
-                    <div className="border border-border rounded-lg overflow-hidden">
+                    <div className="flex-1 border border-border rounded-lg overflow-hidden">
                       <Editor
-                        height="300px"
                         defaultLanguage="javascript"
                         value={testScript}
-                        onChange={(value) => setTestScript(value || "")}
+                        onChange={(v) => setTestScript(v || "")}
                         theme={editorTheme}
-                        options={{
-                          minimap: { enabled: false },
-                          fontSize: 13,
-                        }}
+                        options={{ minimap: { enabled: false }, fontSize: 13, automaticLayout: true }}
+                        height="100%"
                       />
                     </div>
                     {testResults && (
                       <div className="mt-4">
                         <Label>Test Results</Label>
-                        <pre className="mt-2 p-3 bg-muted rounded-lg text-sm overflow-auto max-h-40">
-                          {testResults}
-                        </pre>
+                        <pre className="mt-2 p-3 bg-muted rounded-lg text-sm overflow-auto max-h-40">{testResults}</pre>
                       </div>
                     )}
                   </div>
@@ -658,11 +377,7 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
         </div>
       </div>
 
-      <SaveRequestDialog
-        open={saveDialogOpen}
-        onOpenChange={setSaveDialogOpen}
-        requestData={{ name: "", url, method, headers, body }}
-      />
+      <SaveRequestDialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen} requestData={{ name: "", url, method, headers, body }} />
     </div>
   );
 }
