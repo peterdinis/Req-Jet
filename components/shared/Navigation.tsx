@@ -4,7 +4,6 @@ import { Zap, Menu } from "lucide-react";
 import { FC } from "react";
 import { Button } from "../ui/button";
 import { ModeToggle } from "./ModeToggle";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Sheet,
@@ -14,10 +13,10 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
+import Link from "next/link";
+import { UrlObject } from "url";
 
 const Navigation: FC = () => {
-  const router = useRouter();
-
   const navItems = [
     { label: "Features", href: "/features" },
     { label: "Pricing", href: "/pricing" },
@@ -32,37 +31,39 @@ const Navigation: FC = () => {
           {/* Logo */}
           <motion.div
             className="flex items-center gap-2 cursor-pointer"
-            onClick={() => router.push("/")}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <motion.div
-              className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center"
-              whileHover={{ rotate: 180 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Zap className="w-5 h-5 text-primary-foreground" />
-            </motion.div>
-            <span className="font-bold text-xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Req Jet
-            </span>
+            <Link href="/" className="flex items-center gap-2">
+              <motion.div
+                className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center"
+                whileHover={{ rotate: 180 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Zap className="w-5 h-5 text-primary-foreground" />
+              </motion.div>
+              <span className="font-bold text-xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Req Jet
+              </span>
+            </Link>
           </motion.div>
 
           {/* Navigation Items */}
           <div className="flex items-center gap-6">
             {navItems.map((item, index) => (
-              <motion.button
+              <motion.div
                 key={item.href}
-                className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
-                onClick={() => router.push(item.href)}
-                whileHover={{ scale: 1.05, color: "hsl(var(--primary))" }}
-                whileTap={{ scale: 0.95 }}
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                {item.label}
-              </motion.button>
+                <Link
+                  href={item.href as unknown as UrlObject}
+                  className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
+                >
+                  {item.label}
+                </Link>
+              </motion.div>
             ))}
           </div>
 
@@ -73,19 +74,16 @@ const Navigation: FC = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <Button
-              variant="ghost"
-              onClick={() => router.push("/auth")}
-              className="hidden sm:inline-flex"
-            >
-              Sign In
-            </Button>
-            <Button
-              onClick={() => router.push("/auth")}
-              className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
-            >
-              Get Started
-            </Button>
+            <Link href="/auth">
+              <Button variant="ghost" className="hidden sm:inline-flex">
+                Sign In
+              </Button>
+            </Link>
+            <Link href="/auth">
+              <Button className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90">
+                Get Started
+              </Button>
+            </Link>
             <ModeToggle />
           </motion.div>
         </div>
@@ -93,17 +91,15 @@ const Navigation: FC = () => {
         {/* Mobile Navigation */}
         <div className="flex md:hidden items-center justify-between">
           {/* Logo */}
-          <motion.div
-            className="flex items-center gap-2 cursor-pointer"
-            onClick={() => router.push("/")}
-            whileTap={{ scale: 0.95 }}
-          >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <Zap className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Req Jet
-            </span>
+          <motion.div className="flex items-center gap-2 cursor-pointer" whileTap={{ scale: 0.95 }}>
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                <Zap className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <span className="font-bold text-xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Req Jet
+              </span>
+            </Link>
           </motion.div>
 
           {/* Hamburger Menu with Sheet */}
@@ -125,40 +121,40 @@ const Navigation: FC = () => {
                       Req Jet
                     </span>
                   </SheetTitle>
-                  <SheetDescription>
-                    Powerful API testing platform
-                  </SheetDescription>
+                  <SheetDescription>Powerful API testing platform</SheetDescription>
                 </SheetHeader>
 
                 {/* Mobile Navigation Items */}
                 <div className="flex flex-col gap-4 mb-8">
                   {navItems.map((item) => (
-                    <Button
-                      key={item.href}
-                      variant="ghost"
-                      className="w-full justify-start text-lg font-medium py-3 px-4 hover:bg-muted/50 transition-colors"
-                      onClick={() => router.push(item.href)}
-                    >
-                      {item.label}
-                    </Button>
+                    <Link key={item.href} href={item.href as unknown as UrlObject}>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-lg font-medium py-3 px-4 hover:bg-muted/50 transition-colors"
+                      >
+                        {item.label}
+                      </Button>
+                    </Link>
                   ))}
                 </div>
 
                 {/* Mobile Auth Buttons */}
                 <div className="flex flex-col gap-3 mt-auto">
-                  <Button
-                    variant="outline"
-                    onClick={() => router.push("/auth")}
-                    className="w-full py-3 text-base font-medium"
-                  >
-                    Sign In
-                  </Button>
-                  <Button
-                    onClick={() => router.push("/auth")}
-                    className="w-full py-3 text-base font-medium bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
-                  >
-                    Get Started
-                  </Button>
+                  <Link href="/auth">
+                    <Button
+                      variant="outline"
+                      className="w-full py-3 text-base font-medium"
+                    >
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/auth">
+                    <Button
+                      className="w-full py-3 text-base font-medium bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+                    >
+                      Get Started
+                    </Button>
+                  </Link>
                 </div>
               </SheetContent>
             </Sheet>
