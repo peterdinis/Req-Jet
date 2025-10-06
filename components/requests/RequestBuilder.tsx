@@ -474,7 +474,7 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
                 <TabsContent value="auth" className="space-y-4">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Auth Type</Label>
+                      <Label className="p-2">Auth Type</Label>
                       <Select value={authType} onValueChange={setAuthType}>
                         <SelectTrigger>
                           <SelectValue />

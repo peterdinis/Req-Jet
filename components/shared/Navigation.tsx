@@ -75,7 +75,7 @@ const Navigation: FC = () => {
           >
             <Button
               variant="ghost"
-              onClick={() => router.push("/login")}
+              onClick={() => router.push("/auth")}
               className="hidden sm:inline-flex"
             >
               Sign In
@@ -148,7 +148,7 @@ const Navigation: FC = () => {
                 <div className="flex flex-col gap-3 mt-auto">
                   <Button
                     variant="outline"
-                    onClick={() => router.push("/login")}
+                    onClick={() => router.push("/auth")}
                     className="w-full py-3 text-base font-medium"
                   >
                     Sign In
