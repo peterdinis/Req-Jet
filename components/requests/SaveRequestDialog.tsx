@@ -23,23 +23,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/supabase/client";
 import { createId } from "@paralleldrive/cuid2";
 import { AuthError } from "@supabase/supabase-js";
-
-type Header = {
-  key: string;
-  value: string;
-};
-
-type SaveRequestDialogProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  requestData: {
-    name: string;
-    url: string;
-    method: string;
-    headers: Header[];
-    body: string;
-  };
-};
+import { SaveRequestDialogProps } from "@/types/DialogTypes";
 
 export function SaveRequestDialog({
   open,
@@ -52,7 +36,6 @@ export function SaveRequestDialog({
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Načítanie collections
   const { data: collections } = useQuery({
     queryKey: ["collections"],
     queryFn: async () => {
@@ -65,7 +48,6 @@ export function SaveRequestDialog({
     },
   });
 
-  // Načítanie folders podľa selected collection
   const { data: folders } = useQuery({
     queryKey: ["folders", collectionId],
     queryFn: async () => {
@@ -81,7 +63,6 @@ export function SaveRequestDialog({
     enabled: !!collectionId,
   });
 
-  // Mutation na uloženie requestu
   const saveRequestMutation = useMutation({
     mutationFn: async () => {
       const {
@@ -90,7 +71,7 @@ export function SaveRequestDialog({
       if (!user) throw new Error("Not authenticated");
 
       const { error } = await supabase.from("api_requests").insert({
-        id: createId(), // ✅ generovanie id pre nový request
+        id: createId(),
         user_id: user.id,
         name: name || requestData.url,
         url: requestData.url,

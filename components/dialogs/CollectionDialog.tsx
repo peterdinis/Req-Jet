@@ -17,12 +17,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/supabase/client";
 import { createId } from "@paralleldrive/cuid2";
 import { AuthError } from "@supabase/supabase-js";
-
-type Collection = {
-  id: string;
-  name: string;
-  description: string | null;
-};
+import { Collection } from "@/types/CollectionTypes";
 
 type CollectionDialogProps = {
   open: boolean;
@@ -84,7 +79,7 @@ export function CollectionDialog({
       } else {
         const { error } = await supabase.from("collections").insert({
           id: createId(),
-          user_id: user.id, // teraz už profil existuje
+          user_id: user.id,
           name,
           description,
         });
