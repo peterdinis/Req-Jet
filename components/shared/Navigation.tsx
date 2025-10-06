@@ -91,7 +91,10 @@ const Navigation: FC = () => {
         {/* Mobile Navigation */}
         <div className="flex md:hidden items-center justify-between">
           {/* Logo */}
-          <motion.div className="flex items-center gap-2 cursor-pointer" whileTap={{ scale: 0.95 }}>
+          <motion.div
+            className="flex items-center gap-2 cursor-pointer"
+            whileTap={{ scale: 0.95 }}
+          >
             <Link href="/" className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                 <Zap className="w-5 h-5 text-primary-foreground" />
@@ -121,13 +124,18 @@ const Navigation: FC = () => {
                       Req Jet
                     </span>
                   </SheetTitle>
-                  <SheetDescription>Powerful API testing platform</SheetDescription>
+                  <SheetDescription>
+                    Powerful API testing platform
+                  </SheetDescription>
                 </SheetHeader>
 
                 {/* Mobile Navigation Items */}
                 <div className="flex flex-col gap-4 mb-8">
                   {navItems.map((item) => (
-                    <Link key={item.href} href={item.href as unknown as UrlObject}>
+                    <Link
+                      key={item.href}
+                      href={item.href as unknown as UrlObject}
+                    >
                       <Button
                         variant="ghost"
                         className="w-full justify-start text-lg font-medium py-3 px-4 hover:bg-muted/50 transition-colors"
@@ -149,9 +157,7 @@ const Navigation: FC = () => {
                     </Button>
                   </Link>
                   <Link href="/auth">
-                    <Button
-                      className="w-full py-3 text-base font-medium bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
-                    >
+                    <Button className="w-full py-3 text-base font-medium bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90">
                       Get Started
                     </Button>
                   </Link>

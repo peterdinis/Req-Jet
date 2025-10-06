@@ -130,23 +130,30 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
     return `${url}?${params.toString()}`;
   };
 
-  const runTests = (responseData: { status: number; statusText: string; headers: { [k: string]: string; }; data: unknown; }, responseTime: number) => {
+  const runTests = (
+    responseData: {
+      status: number;
+      statusText: string;
+      headers: { [k: string]: string };
+      data: unknown;
+    },
+    responseTime: number,
+  ) => {
+    const logs: string[] = [];
+    const originalConsoleLog = console.log;
+
+    // Zachytávanie console.log
+    console.log = (...args: unknown[]) => {
+      logs.push(
+        args
+          .map((a) =>
+            typeof a === "object" ? JSON.stringify(a, null, 2) : String(a),
+          )
+          .join(" "),
+      );
+    };
+
     try {
-      const logs: string[] = [];
-      const originalConsoleLog = console.log;
-
-      // Override console.log to capture output
-      console.log = (...args: unknown[]) => {
-        logs.push(
-          args
-            .map((a) =>
-              typeof a === "object" ? JSON.stringify(a, null, 2) : String(a),
-            )
-            .join(" "),
-        );
-      };
-
-      // Execute the test script
       const testFunction = new Function(
         "response",
         "responseTime",
@@ -154,30 +161,23 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
         testScript,
       );
       testFunction(responseData, responseTime, console);
-
-      // Restore original console.log
-      console.log = originalConsoleLog;
-
-      const result =
-        logs.length > 0
-          ? logs.join("\n")
-          : "Tests completed successfully (no console output)";
-      setTestResults(result);
-      toast({ title: "Tests executed" });
+      // Ak sa test nezrúti a nevypíše log, dáme info o úspechu
+      if (logs.length === 0)
+        logs.push("✅ Test executed successfully (no console output)");
     } catch (error) {
-      const errorMsg =
-        error && typeof error === "object" && "message" in error
-          ? `Test error: ${(error as { message: string }).message}`
-          : "Test error: Unknown error";
-      setTestResults(errorMsg);
-      toast({
-        title: "Test execution failed",
-        description:
+      // Zachytíme chyby testu
+      logs.push(
+        `❌ Test error: ${
           error && typeof error === "object" && "message" in error
             ? (error as { message: string }).message
-            : "Unknown error",
-        variant: "destructive",
-      });
+            : "Unknown error"
+        }`,
+      );
+    } finally {
+      console.log = originalConsoleLog;
+      // Nastavíme výsledky do stavu, zobrazí sa v UI
+      setTestResults(logs.join("\n"));
+      toast({ title: "Tests executed" });
     }
   };
 
