@@ -5,9 +5,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, XCircle, Clock, FileText } from "lucide-react";
 import Editor from "@monaco-editor/react";
+import { useMonacoTheme } from "@/hooks/shared/useMonacoTheme";
+
+type ApiResponse = {
+  status: number;
+  statusText?: string;
+  data?: unknown;
+  headers?: Record<string, string>;
+  error?: string;
+};
 
 type ResponseViewerProps = {
-  response: any;
+  response: ApiResponse;
   responseTime: number;
 };
 
@@ -25,6 +34,7 @@ export function ResponseViewer({
 }: ResponseViewerProps) {
   const isSuccess = response.status >= 200 && response.status < 300;
   const isError = response.status >= 400 || response.error;
+  const editorTheme = useMonacoTheme();
 
   const responseBody = response.error
     ? response.error
@@ -80,7 +90,7 @@ export function ResponseViewer({
                 height="100%"
                 defaultLanguage={response.error ? "plaintext" : "json"}
                 value={responseBody}
-                theme="vs-dark"
+                theme={editorTheme}
                 options={{
                   readOnly: true,
                   minimap: { enabled: false },

@@ -22,6 +22,7 @@ import {
   useResetPasswordMutation,
   useUpdatePasswordMutation,
 } from "@/hooks/auth/usePasswords";
+import { AuthError } from "@supabase/supabase-js";
 
 const AuthWrapper: FC = () => {
   const [email, setEmail] = useState("");
@@ -93,7 +94,7 @@ const AuthWrapper: FC = () => {
           });
           router.push("/dashboard");
         },
-        onError: (err: any) =>
+        onError: (err: Partial<AuthError>) =>
           toast({
             title: "Login failed",
             description: err.message,
@@ -118,7 +119,7 @@ const AuthWrapper: FC = () => {
           setPassword("");
           setActiveTab("login");
         },
-        onError: (err: any) =>
+        onError: (err: Partial<AuthError>) =>
           toast({
             title: "Signup failed",
             description: err.message,
@@ -141,7 +142,7 @@ const AuthWrapper: FC = () => {
           });
           setShowResetPassword(false);
         },
-        onError: (err: any) =>
+        onError: (err: Partial<AuthError>) =>
           toast({
             title: "Reset failed",
             description: err.message,
@@ -166,7 +167,7 @@ const AuthWrapper: FC = () => {
           setNewPassword("");
           router.push("/dashboard");
         },
-        onError: (err: any) =>
+        onError: (err: Partial<AuthError>) =>
           toast({
             title: "Update failed",
             description: err.message,

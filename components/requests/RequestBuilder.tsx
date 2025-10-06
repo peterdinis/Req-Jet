@@ -19,6 +19,8 @@ import Editor from "@monaco-editor/react";
 import { supabase } from "@/supabase/client";
 import { SaveRequestDialog } from "./SaveRequestDialog";
 import { ResponseViewer } from "../response/ResponseViewer";
+import { useMonacoTheme } from "@/hooks/shared/useMonacoTheme";
+import { AuthError } from "@supabase/supabase-js";
 
 type Header = {
   key: string;
@@ -38,6 +40,7 @@ type RequestBuilderProps = {
 export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
   const [method, setMethod] = useState("GET");
   const [url, setUrl] = useState("");
+  const editorTheme = useMonacoTheme();
   const [headers, setHeaders] = useState<Header[]>([{ key: "", value: "" }]);
   const [queryParams, setQueryParams] = useState<QueryParam[]>([
     { key: "", value: "", enabled: true },
@@ -127,13 +130,13 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
     return `${url}?${params.toString()}`;
   };
 
-  const runTests = (responseData: any, responseTime: number) => {
+  const runTests = (responseData: { status: number; statusText: string; headers: { [k: string]: string; }; data: unknown; }, responseTime: number) => {
     try {
       const logs: string[] = [];
       const originalConsoleLog = console.log;
 
       // Override console.log to capture output
-      console.log = (...args: any[]) => {
+      console.log = (...args: unknown[]) => {
         logs.push(
           args
             .map((a) =>
@@ -161,12 +164,18 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
           : "Tests completed successfully (no console output)";
       setTestResults(result);
       toast({ title: "Tests executed" });
-    } catch (error: any) {
-      const errorMsg = `Test error: ${error.message}`;
+    } catch (error) {
+      const errorMsg =
+        error && typeof error === "object" && "message" in error
+          ? `Test error: ${(error as { message: string }).message}`
+          : "Test error: Unknown error";
       setTestResults(errorMsg);
       toast({
         title: "Test execution failed",
-        description: error.message,
+        description:
+          error && typeof error === "object" && "message" in error
+            ? (error as { message: string }).message
+            : "Unknown error",
         variant: "destructive",
       });
     }
@@ -272,16 +281,22 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
       }
 
       toast({ title: "Request sent successfully" });
-    } catch (error: any) {
+    } catch (error) {
       const endTime = Date.now();
       setResponseTime(endTime - startTime);
       toast({
         title: "Request failed",
-        description: error.message,
+        description:
+          error && typeof error === "object" && "message" in error
+            ? (error as { message: string }).message
+            : "Unknown error",
         variant: "destructive",
       });
       setResponse({
-        error: error.message,
+        error:
+          error && typeof error === "object" && "message" in error
+            ? (error as { message: string }).message
+            : "Unknown error",
       });
     } finally {
       setIsLoading(false);
@@ -387,7 +402,7 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
                           defaultLanguage="graphql"
                           value={graphqlQuery}
                           onChange={(value) => setGraphqlQuery(value || "")}
-                          theme="vs-dark"
+                          theme={editorTheme}
                           options={{
                             minimap: { enabled: false },
                             fontSize: 13,
@@ -405,7 +420,7 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
                           onChange={(value) =>
                             setGraphqlVariables(value || "{}")
                           }
-                          theme="vs-dark"
+                          theme={editorTheme}
                           options={{
                             minimap: { enabled: false },
                             fontSize: 13,
@@ -569,7 +584,7 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
                           }
                           value={body}
                           onChange={(value) => setBody(value || "")}
-                          theme="vs-dark"
+                          theme={editorTheme}
                           options={{
                             minimap: { enabled: false },
                             fontSize: 13,
@@ -607,7 +622,7 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
                         defaultLanguage="javascript"
                         value={testScript}
                         onChange={(value) => setTestScript(value || "")}
-                        theme="vs-dark"
+                        theme={editorTheme}
                         options={{
                           minimap: { enabled: false },
                           fontSize: 13,

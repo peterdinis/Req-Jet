@@ -7,17 +7,16 @@ import { supabase } from "@/supabase/client";
 export const useLogout = () => {
   const router = useRouter();
 
-  const mutation = useMutation({
+  const mutation = useMutation<void, Error>({
     mutationKey: ["logoutUser"],
     mutationFn: async () => {
       const { error } = await supabase.auth.signOut();
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
-      // Po úspešnom logout presmerujeme používateľa
       router.push("/auth");
     },
-    onError: (error: any) => {
+    onError: (error) => {
       console.error("Logout failed:", error.message);
     },
   });
