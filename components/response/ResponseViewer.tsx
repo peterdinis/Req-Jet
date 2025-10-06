@@ -29,15 +29,18 @@ const InfoBadge = ({ icon: Icon, label }: { icon: any; label: string }) => (
   </div>
 );
 
-export function ResponseViewer({ response, responseTime }: ResponseViewerProps) {
+export function ResponseViewer({
+  response,
+  responseTime,
+}: ResponseViewerProps) {
   const editorTheme = useMonacoTheme();
 
   const { responseBody, bodySize, isSuccess, isError } = useMemo(() => {
     const body = response.error
       ? response.error
       : typeof response.data === "string"
-      ? response.data
-      : JSON.stringify(response.data, null, 2);
+        ? response.data
+        : JSON.stringify(response.data, null, 2);
 
     return {
       responseBody: body,
@@ -58,7 +61,10 @@ export function ResponseViewer({ response, responseTime }: ResponseViewerProps) 
           </CardTitle>
           <div className="flex items-center gap-4">
             {response.status && (
-              <Badge variant={isSuccess ? "default" : "destructive"} className="font-mono">
+              <Badge
+                variant={isSuccess ? "default" : "destructive"}
+                className="font-mono"
+              >
                 {response.status} {response.statusText}
               </Badge>
             )}
@@ -73,7 +79,8 @@ export function ResponseViewer({ response, responseTime }: ResponseViewerProps) 
           <TabsList>
             <TabsTrigger value="body">Body</TabsTrigger>
             <TabsTrigger value="headers">
-              Headers ({response.headers ? Object.keys(response.headers).length : 0})
+              Headers (
+              {response.headers ? Object.keys(response.headers).length : 0})
             </TabsTrigger>
             <TabsTrigger value="cookies">Cookies</TabsTrigger>
           </TabsList>
@@ -101,8 +108,12 @@ export function ResponseViewer({ response, responseTime }: ResponseViewerProps) 
               <div className="rounded-lg bg-muted p-4 overflow-auto max-h-96 space-y-2">
                 {Object.entries(response.headers).map(([key, value]) => (
                   <div key={key} className="flex gap-2 text-sm">
-                    <span className="font-semibold text-primary min-w-[200px]">{key}:</span>
-                    <span className="text-muted-foreground break-all">{value}</span>
+                    <span className="font-semibold text-primary min-w-[200px]">
+                      {key}:
+                    </span>
+                    <span className="text-muted-foreground break-all">
+                      {value}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -112,7 +123,9 @@ export function ResponseViewer({ response, responseTime }: ResponseViewerProps) 
           </TabsContent>
 
           <TabsContent value="cookies" className="mt-4">
-            <p className="text-sm text-muted-foreground">No cookies in this response</p>
+            <p className="text-sm text-muted-foreground">
+              No cookies in this response
+            </p>
           </TabsContent>
         </Tabs>
       </CardContent>

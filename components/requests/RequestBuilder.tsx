@@ -5,7 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Send, Plus, Trash2, Loader2, Save, Play } from "lucide-react";
@@ -85,13 +91,24 @@ function KeyValueList({
             onChange={(e) => onChange(index, "value", e.target.value)}
             className="flex-1"
           />
-          <Button variant="ghost" size="icon" onClick={() => onRemove(index)} disabled={items.length === 1}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onRemove(index)}
+            disabled={items.length === 1}
+          >
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       ))}
       {allowAdd && (
-        <Button variant="outline" onClick={() => onChange(items.length, "add", { key: "", value: "", enabled: true })} className="w-full gap-2">
+        <Button
+          variant="outline"
+          onClick={() =>
+            onChange(items.length, "add", { key: "", value: "", enabled: true })
+          }
+          className="w-full gap-2"
+        >
           <Plus className="h-4 w-4" />
           {addLabel}
         </Button>
@@ -127,41 +144,89 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
 
   useEffect(() => {
     if (selectedRequest) {
-      dispatch({ type: "SET_FIELD", field: "method", value: selectedRequest.method || "GET" });
-      dispatch({ type: "SET_FIELD", field: "url", value: selectedRequest.url || "" });
-      dispatch({ type: "SET_HEADERS", value: selectedRequest.headers || [{ key: "", value: "" }] });
-      dispatch({ type: "SET_FIELD", field: "body", value: selectedRequest.body || "" });
-      dispatch({ type: "SET_FIELD", field: "requestType", value: selectedRequest.request_type || "rest" });
-      dispatch({ type: "SET_FIELD", field: "graphqlQuery", value: selectedRequest.graphql_query || "" });
-      dispatch({ type: "SET_FIELD", field: "graphqlVariables", value: selectedRequest.graphql_variables || "{}" });
-      dispatch({ type: "SET_FIELD", field: "testScript", value: selectedRequest.test_script || "" });
+      dispatch({
+        type: "SET_FIELD",
+        field: "method",
+        value: selectedRequest.method || "GET",
+      });
+      dispatch({
+        type: "SET_FIELD",
+        field: "url",
+        value: selectedRequest.url || "",
+      });
+      dispatch({
+        type: "SET_HEADERS",
+        value: selectedRequest.headers || [{ key: "", value: "" }],
+      });
+      dispatch({
+        type: "SET_FIELD",
+        field: "body",
+        value: selectedRequest.body || "",
+      });
+      dispatch({
+        type: "SET_FIELD",
+        field: "requestType",
+        value: selectedRequest.request_type || "rest",
+      });
+      dispatch({
+        type: "SET_FIELD",
+        field: "graphqlQuery",
+        value: selectedRequest.graphql_query || "",
+      });
+      dispatch({
+        type: "SET_FIELD",
+        field: "graphqlVariables",
+        value: selectedRequest.graphql_variables || "{}",
+      });
+      dispatch({
+        type: "SET_FIELD",
+        field: "testScript",
+        value: selectedRequest.test_script || "",
+      });
     }
   }, [selectedRequest]);
 
   const buildUrl = useMemo(() => {
     if (!state.url) return "";
     const params = new URLSearchParams();
-    state.queryParams.filter((p) => p.enabled && p.key && p.value).forEach((p) => params.append(p.key, p.value));
+    state.queryParams
+      .filter((p) => p.enabled && p.key && p.value)
+      .forEach((p) => params.append(p.key, p.value));
     return params.toString() ? `${state.url}?${params.toString()}` : state.url;
   }, [state.url, state.queryParams]);
 
-  const handleKeyValueChange = (type: "headers" | "queryParams") => (index: number, field: keyof KeyValue | "add", value: any) => {
-    if (field === "add") {
-      const newItems = [...state[type], value];
-      dispatch({ type: type === "headers" ? "SET_HEADERS" : "SET_QUERIES", value: newItems });
-      return;
-    }
-    const newItems = state[type].map((item, i) => (i === index ? { ...item, [field]: value } : item));
-    dispatch({ type: type === "headers" ? "SET_HEADERS" : "SET_QUERIES", value: newItems });
-  };
+  const handleKeyValueChange =
+    (type: "headers" | "queryParams") =>
+    (index: number, field: keyof KeyValue | "add", value: any) => {
+      if (field === "add") {
+        const newItems = [...state[type], value];
+        dispatch({
+          type: type === "headers" ? "SET_HEADERS" : "SET_QUERIES",
+          value: newItems,
+        });
+        return;
+      }
+      const newItems = state[type].map((item, i) =>
+        i === index ? { ...item, [field]: value } : item,
+      );
+      dispatch({
+        type: type === "headers" ? "SET_HEADERS" : "SET_QUERIES",
+        value: newItems,
+      });
+    };
 
-  const handleRemoveKeyValue = (type: "headers" | "queryParams") => (index: number) => {
-    const newItems = state[type].filter((_, i) => i !== index);
-    dispatch({ type: type === "headers" ? "SET_HEADERS" : "SET_QUERIES", value: newItems });
-  };
+  const handleRemoveKeyValue =
+    (type: "headers" | "queryParams") => (index: number) => {
+      const newItems = state[type].filter((_, i) => i !== index);
+      dispatch({
+        type: type === "headers" ? "SET_HEADERS" : "SET_QUERIES",
+        value: newItems,
+      });
+    };
 
   const sendRequest = useCallback(async () => {
-    if (!state.url) return toast({ title: "Please enter a URL", variant: "destructive" });
+    if (!state.url)
+      return toast({ title: "Please enter a URL", variant: "destructive" });
     setIsLoading(true);
     setTestResults("");
     setResponse(null);
@@ -169,16 +234,30 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
 
     try {
       const headers: Record<string, string> = {};
-      state.headers.forEach((h) => h.key && h.value && (headers[h.key] = h.value));
-      if (state.authType === "bearer" && state.authToken) headers["Authorization"] = `Bearer ${state.authToken}`;
-      if (state.authType === "basic" && state.authToken) headers["Authorization"] = `Basic ${state.authToken}`;
+      state.headers.forEach(
+        (h) => h.key && h.value && (headers[h.key] = h.value),
+      );
+      if (state.authType === "bearer" && state.authToken)
+        headers["Authorization"] = `Bearer ${state.authToken}`;
+      if (state.authType === "basic" && state.authToken)
+        headers["Authorization"] = `Basic ${state.authToken}`;
 
-      const options: RequestInit = { method: state.requestType === "graphql" ? "POST" : state.method, headers };
+      const options: RequestInit = {
+        method: state.requestType === "graphql" ? "POST" : state.method,
+        headers,
+      };
       if (state.requestType === "graphql") {
         headers["Content-Type"] = "application/json";
-        options.body = JSON.stringify({ query: state.graphqlQuery, variables: JSON.parse(state.graphqlVariables || "{}") });
-      } else if (["POST", "PUT", "PATCH"].includes(state.method) && state.body) {
-        if (state.bodyType === "json") headers["Content-Type"] = "application/json";
+        options.body = JSON.stringify({
+          query: state.graphqlQuery,
+          variables: JSON.parse(state.graphqlVariables || "{}"),
+        });
+      } else if (
+        ["POST", "PUT", "PATCH"].includes(state.method) &&
+        state.body
+      ) {
+        if (state.bodyType === "json")
+          headers["Content-Type"] = "application/json";
         options.body = state.body;
       }
 
@@ -186,17 +265,33 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
       const endTime = Date.now();
       setResponseTime(endTime - startTime);
       const contentType = res.headers.get("content-type");
-      const data = contentType?.includes("json") ? await res.json() : await res.text();
-      const responseData = { status: res.status, statusText: res.statusText, headers: Object.fromEntries(res.headers.entries()), data };
+      const data = contentType?.includes("json")
+        ? await res.json()
+        : await res.text();
+      const responseData = {
+        status: res.status,
+        statusText: res.statusText,
+        headers: Object.fromEntries(res.headers.entries()),
+        data,
+      };
       setResponse(responseData);
 
       // Optional: run tests
       if (state.testScript?.trim()) {
         try {
           const logs: string[] = [];
-          const customConsole = { log: (...args: any[]) => logs.push(args.join(" ")) };
-          new Function("response", "responseTime", "console", state.testScript)(responseData, endTime - startTime, customConsole);
-          setTestResults(logs.join("\n") || "✅ Test executed successfully (no console output)");
+          const customConsole = {
+            log: (...args: any[]) => logs.push(args.join(" ")),
+          };
+          new Function("response", "responseTime", "console", state.testScript)(
+            responseData,
+            endTime - startTime,
+            customConsole,
+          );
+          setTestResults(
+            logs.join("\n") ||
+              "✅ Test executed successfully (no console output)",
+          );
         } catch (e: any) {
           setTestResults(`❌ Test error: ${e.message || e}`);
         }
@@ -205,7 +300,11 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
       toast({ title: "Request sent successfully" });
     } catch (e: any) {
       setResponse({ error: e.message || "Unknown error" });
-      toast({ title: "Request failed", description: e.message || "Unknown error", variant: "destructive" });
+      toast({
+        title: "Request failed",
+        description: e.message || "Unknown error",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -215,44 +314,100 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
     <div className="flex flex-col h-[calc(100vh-3.5rem)]">
       {/* --- Top Bar --- */}
       <div className="border-b border-border p-4 flex gap-2 items-center">
-        <Select value={state.requestType} onValueChange={(v) => dispatch({ type: "SET_FIELD", field: "requestType", value: v })}>
-          <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+        <Select
+          value={state.requestType}
+          onValueChange={(v) =>
+            dispatch({ type: "SET_FIELD", field: "requestType", value: v })
+          }
+        >
+          <SelectTrigger className="w-32">
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="rest">REST</SelectItem>
             <SelectItem value="graphql">GraphQL</SelectItem>
           </SelectContent>
         </Select>
         {state.requestType === "rest" && (
-          <Select value={state.method} onValueChange={(v) => dispatch({ type: "SET_FIELD", field: "method", value: v })}>
-            <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+          <Select
+            value={state.method}
+            onValueChange={(v) =>
+              dispatch({ type: "SET_FIELD", field: "method", value: v })
+            }
+          >
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
-              {["GET","POST","PUT","PATCH","DELETE","HEAD","OPTIONS"].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+              {["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"].map(
+                (m) => (
+                  <SelectItem key={m} value={m}>
+                    {m}
+                  </SelectItem>
+                ),
+              )}
             </SelectContent>
           </Select>
         )}
-        <Input placeholder="https://api.example.com" value={state.url} onChange={(e) => dispatch({ type: "SET_FIELD", field: "url", value: e.target.value })} className="flex-1" />
-        <Button onClick={sendRequest} disabled={isLoading} className="gap-2">{isLoading ? <Loader2 className="h-4 w-4 animate-spin"/> : <Send className="h-4 w-4"/>} Send</Button>
-        <Button variant="outline" onClick={() => setSaveDialogOpen(true)} className="gap-2"><Save className="h-4 w-4"/> Save</Button>
+        <Input
+          placeholder="https://api.example.com"
+          value={state.url}
+          onChange={(e) =>
+            dispatch({ type: "SET_FIELD", field: "url", value: e.target.value })
+          }
+          className="flex-1"
+        />
+        <Button onClick={sendRequest} disabled={isLoading} className="gap-2">
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Send className="h-4 w-4" />
+          )}{" "}
+          Send
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => setSaveDialogOpen(true)}
+          className="gap-2"
+        >
+          <Save className="h-4 w-4" /> Save
+        </Button>
       </div>
 
       {/* --- URL Preview --- */}
-      {state.queryParams.some(p => p.enabled && p.key && p.value) && state.requestType === "rest" && (
-        <div className="text-sm text-muted-foreground font-mono bg-muted px-3 py-2 rounded">{buildUrl}</div>
-      )}
+      {state.queryParams.some((p) => p.enabled && p.key && p.value) &&
+        state.requestType === "rest" && (
+          <div className="text-sm text-muted-foreground font-mono bg-muted px-3 py-2 rounded">
+            {buildUrl}
+          </div>
+        )}
 
       {/* --- Main Content --- */}
       <div className="flex-1 overflow-auto p-4 grid lg:grid-cols-2 gap-4 h-full">
         {/* Request Card */}
         <Card className="flex flex-col">
-          <CardHeader><CardTitle>Request</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>Request</CardTitle>
+          </CardHeader>
           <CardContent className="flex-1 overflow-auto">
-            <Tabs defaultValue={state.requestType === "graphql" ? "graphql" : "params"} className="w-full">
+            <Tabs
+              defaultValue={
+                state.requestType === "graphql" ? "graphql" : "params"
+              }
+              className="w-full"
+            >
               <TabsList className="grid w-full grid-cols-6">
-                {state.requestType === "rest" && <TabsTrigger value="params">Params</TabsTrigger>}
-                {state.requestType === "graphql" && <TabsTrigger value="graphql">GraphQL</TabsTrigger>}
+                {state.requestType === "rest" && (
+                  <TabsTrigger value="params">Params</TabsTrigger>
+                )}
+                {state.requestType === "graphql" && (
+                  <TabsTrigger value="graphql">GraphQL</TabsTrigger>
+                )}
                 <TabsTrigger value="auth">Auth</TabsTrigger>
                 <TabsTrigger value="headers">Headers</TabsTrigger>
-                {state.requestType === "rest" && <TabsTrigger value="body">Body</TabsTrigger>}
+                {state.requestType === "rest" && (
+                  <TabsTrigger value="body">Body</TabsTrigger>
+                )}
                 <TabsTrigger value="tests">Tests</TabsTrigger>
               </TabsList>
 
@@ -277,7 +432,13 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
                       height="250px"
                       defaultLanguage="graphql"
                       value={state.graphqlQuery}
-                      onChange={(v) => dispatch({ type: "SET_FIELD", field: "graphqlQuery", value: v || "" })}
+                      onChange={(v) =>
+                        dispatch({
+                          type: "SET_FIELD",
+                          field: "graphqlQuery",
+                          value: v || "",
+                        })
+                      }
                       theme={editorTheme}
                       options={{ minimap: { enabled: false }, fontSize: 13 }}
                     />
@@ -288,7 +449,13 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
                       height="150px"
                       defaultLanguage="json"
                       value={state.graphqlVariables}
-                      onChange={(v) => dispatch({ type: "SET_FIELD", field: "graphqlVariables", value: v || "{}" })}
+                      onChange={(v) =>
+                        dispatch({
+                          type: "SET_FIELD",
+                          field: "graphqlVariables",
+                          value: v || "{}",
+                        })
+                      }
                       theme={editorTheme}
                       options={{ minimap: { enabled: false }, fontSize: 13 }}
                     />
@@ -300,8 +467,19 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
               <TabsContent value="auth" className="space-y-4">
                 <div className="space-y-2">
                   <Label>Auth Type</Label>
-                  <Select value={state.authType} onValueChange={(v) => dispatch({ type: "SET_FIELD", field: "authType", value: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    value={state.authType}
+                    onValueChange={(v) =>
+                      dispatch({
+                        type: "SET_FIELD",
+                        field: "authType",
+                        value: v,
+                      })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">No Auth</SelectItem>
                       <SelectItem value="bearer">Bearer Token</SelectItem>
@@ -310,33 +488,80 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
                     </SelectContent>
                   </Select>
                   {state.authType !== "none" && (
-                    <Input type="password" placeholder="Enter token" value={state.authToken} onChange={(e) => dispatch({ type: "SET_FIELD", field: "authToken", value: e.target.value })}/>
+                    <Input
+                      type="password"
+                      placeholder="Enter token"
+                      value={state.authToken}
+                      onChange={(e) =>
+                        dispatch({
+                          type: "SET_FIELD",
+                          field: "authToken",
+                          value: e.target.value,
+                        })
+                      }
+                    />
                   )}
                 </div>
               </TabsContent>
 
               {/* Headers */}
               <TabsContent value="headers">
-                <KeyValueList items={state.headers} onChange={handleKeyValueChange("headers")} onRemove={handleRemoveKeyValue("headers")} addLabel="Add Header" />
+                <KeyValueList
+                  items={state.headers}
+                  onChange={handleKeyValueChange("headers")}
+                  onRemove={handleRemoveKeyValue("headers")}
+                  addLabel="Add Header"
+                />
               </TabsContent>
 
               {/* Body */}
               {state.requestType === "rest" && (
                 <TabsContent value="body" className="space-y-2">
                   <Label>Body Type</Label>
-                  <Select value={state.bodyType} onValueChange={(v) => dispatch({ type: "SET_FIELD", field: "bodyType", value: v })}>
-                    <SelectTrigger className="w-32"><SelectValue/></SelectTrigger>
+                  <Select
+                    value={state.bodyType}
+                    onValueChange={(v) =>
+                      dispatch({
+                        type: "SET_FIELD",
+                        field: "bodyType",
+                        value: v,
+                      })
+                    }
+                  >
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
-                      {["json","xml","text","form"].map(t => <SelectItem key={t} value={t}>{t.toUpperCase()}</SelectItem>)}
+                      {["json", "xml", "text", "form"].map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {t.toUpperCase()}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <Editor
                     height="300px"
-                    defaultLanguage={state.bodyType==="json"?"json":state.bodyType==="xml"?"xml":"plaintext"}
+                    defaultLanguage={
+                      state.bodyType === "json"
+                        ? "json"
+                        : state.bodyType === "xml"
+                          ? "xml"
+                          : "plaintext"
+                    }
                     value={state.body}
-                    onChange={(v) => dispatch({ type: "SET_FIELD", field: "body", value: v || "" })}
+                    onChange={(v) =>
+                      dispatch({
+                        type: "SET_FIELD",
+                        field: "body",
+                        value: v || "",
+                      })
+                    }
                     theme={editorTheme}
-                    options={{ minimap:{enabled:false}, fontSize:13, automaticLayout:true }}
+                    options={{
+                      minimap: { enabled: false },
+                      fontSize: 13,
+                      automaticLayout: true,
+                    }}
                   />
                 </TabsContent>
               )}
@@ -345,7 +570,12 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
               <TabsContent value="tests" className="space-y-2">
                 <div className="flex justify-between items-center">
                   <Label>Test Script</Label>
-                  <Button variant="outline" size="sm" className="gap-2" onClick={() => response && sendRequest()}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => response && sendRequest()}
+                  >
                     <Play className="h-3 w-3" /> Run Tests
                   </Button>
                 </div>
@@ -353,11 +583,21 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
                   height="300px"
                   defaultLanguage="javascript"
                   value={state.testScript}
-                  onChange={(v) => dispatch({ type: "SET_FIELD", field: "testScript", value: v || "" })}
+                  onChange={(v) =>
+                    dispatch({
+                      type: "SET_FIELD",
+                      field: "testScript",
+                      value: v || "",
+                    })
+                  }
                   theme={editorTheme}
-                  options={{ minimap:{enabled:false}, fontSize:13 }}
+                  options={{ minimap: { enabled: false }, fontSize: 13 }}
                 />
-                {testResults && <pre className="mt-2 p-3 bg-muted rounded-lg text-sm overflow-auto max-h-40">{testResults}</pre>}
+                {testResults && (
+                  <pre className="mt-2 p-3 bg-muted rounded-lg text-sm overflow-auto max-h-40">
+                    {testResults}
+                  </pre>
+                )}
               </TabsContent>
             </Tabs>
           </CardContent>
@@ -365,15 +605,28 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
 
         {/* Response */}
         <div className="flex flex-col">
-          {response ? <ResponseViewer response={response} responseTime={responseTime}/> :
+          {response ? (
+            <ResponseViewer response={response} responseTime={responseTime} />
+          ) : (
             <Card className="flex-1 flex items-center justify-center text-muted-foreground">
-              <Send className="h-12 w-12 mx-auto mb-4 opacity-20"/>
+              <Send className="h-12 w-12 mx-auto mb-4 opacity-20" />
               <p>Send a request to see the response</p>
-            </Card>}
+            </Card>
+          )}
         </div>
       </div>
 
-      <SaveRequestDialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen} requestData={{ name:"", url: state.url, method: state.method, headers: state.headers, body: state.body }} />
+      <SaveRequestDialog
+        open={saveDialogOpen}
+        onOpenChange={setSaveDialogOpen}
+        requestData={{
+          name: "",
+          url: state.url,
+          method: state.method,
+          headers: state.headers,
+          body: state.body,
+        }}
+      />
     </div>
   );
 }
