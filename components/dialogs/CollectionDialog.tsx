@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/supabase/client";
+import { createId } from "@paralleldrive/cuid2";
 
 type Collection = {
   id: string;
@@ -55,6 +56,24 @@ export function CollectionDialog({
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+
+      if (!profile) {
+        const { error: insertError } = await supabase.from("profiles").insert({
+          id: String(user.id),
+          email: String(user.email),
+          full_name: (user.user_metadata?.full_name as string) ?? null,
+          avatar_url: (user.user_metadata?.avatar_url as string) ?? null,
+        });
+        if (insertError) throw insertError;
+      }
+
       if (collection) {
         const { error } = await supabase
           .from("collections")
@@ -62,9 +81,12 @@ export function CollectionDialog({
           .eq("id", collection.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .from("collections")
-          .insert({ user_id: user.id, name, description });
+        const { error } = await supabase.from("collections").insert({
+          id: createId(),
+          user_id: user.id, // teraz už profil existuje
+          name,
+          description,
+        });
         if (error) throw error;
       }
     },

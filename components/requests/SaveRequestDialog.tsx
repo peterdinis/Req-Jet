@@ -21,6 +21,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/supabase/client";
+import { createId } from "@paralleldrive/cuid2";
 
 type SaveRequestDialogProps = {
   open: boolean;
@@ -45,6 +46,7 @@ export function SaveRequestDialog({
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Načítanie collections
   const { data: collections } = useQuery({
     queryKey: ["collections"],
     queryFn: async () => {
@@ -57,6 +59,7 @@ export function SaveRequestDialog({
     },
   });
 
+  // Načítanie folders podľa selected collection
   const { data: folders } = useQuery({
     queryKey: ["folders", collectionId],
     queryFn: async () => {
@@ -72,6 +75,7 @@ export function SaveRequestDialog({
     enabled: !!collectionId,
   });
 
+  // Mutation na uloženie requestu
   const saveRequestMutation = useMutation({
     mutationFn: async () => {
       const {
@@ -80,6 +84,7 @@ export function SaveRequestDialog({
       if (!user) throw new Error("Not authenticated");
 
       const { error } = await supabase.from("api_requests").insert({
+        id: createId(), // ✅ generovanie id pre nový request
         user_id: user.id,
         name: name || requestData.url,
         url: requestData.url,
@@ -132,6 +137,7 @@ export function SaveRequestDialog({
               onChange={(e) => setName(e.target.value)}
             />
           </div>
+
           <div className="space-y-2">
             <Label>Collection (Optional)</Label>
             <Select value={collectionId} onValueChange={setCollectionId}>
@@ -147,6 +153,7 @@ export function SaveRequestDialog({
               </SelectContent>
             </Select>
           </div>
+
           {collectionId && folders && folders.length > 0 && (
             <div className="space-y-2">
               <Label>Folder (Optional)</Label>
@@ -165,6 +172,7 @@ export function SaveRequestDialog({
             </div>
           )}
         </div>
+
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
