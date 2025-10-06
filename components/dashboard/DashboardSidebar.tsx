@@ -43,6 +43,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/supabase/client";
 import { CollectionDialog } from "../dialogs/CollectionDialog";
+import { ModeToggle } from "../shared/ModeToggle";
 
 type Collection = {
   id: string;
@@ -306,17 +307,7 @@ export function DashboardSidebar({ user, onRequestSelect }: { user: User | null;
               })}
             </SidebarMenu>
           </ScrollArea>
-
-          <div className="mt-4 space-y-2">
-            <Button
-              variant="outline"
-              className="w-full justify-start gap-2"
-              onClick={() => setShowHistory(true)}
-            >
-              <Clock className="h-4 w-4" />
-              History
-            </Button>
-          </div>
+          <ModeToggle />
         </SidebarContent>
 
         <SidebarFooter className="border-t border-border p-4">
