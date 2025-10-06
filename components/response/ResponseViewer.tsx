@@ -8,19 +8,8 @@ import Editor from "@monaco-editor/react";
 import { useMonacoTheme } from "@/hooks/shared/useMonacoTheme";
 import { useMemo } from "react";
 import prettyBytes from "pretty-bytes";
+import { ResponseViewerProps } from "@/types/ResponseTypes";
 
-type ApiResponse = {
-  status: number;
-  statusText?: string;
-  data?: unknown;
-  headers?: Record<string, string>;
-  error?: string;
-};
-
-type ResponseViewerProps = {
-  response: ApiResponse;
-  responseTime: number;
-};
 
 const InfoBadge = ({ icon: Icon, label }: { icon: any; label: string }) => (
   <div className="flex items-center gap-1 text-sm text-muted-foreground">
