@@ -167,7 +167,7 @@ export function DashboardSidebar({ user, onRequestSelect }: { user: User | null;
               <Zap className="w-5 h-5 text-primary-foreground" />
             </div>
             <div className="flex-1">
-              <h2 className="font-semibold">API Tester</h2>
+              <h2 className="font-semibold">Req Jet</h2>
               <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
             </div>
           </div>
