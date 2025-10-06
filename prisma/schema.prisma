@@ -19,7 +19,6 @@ model Profile {
   collections Collection[]
   folders     Folder[]
   api_requests ApiRequest[]
-  request_history RequestHistory[]
 
   @@map("profiles")
 }
@@ -69,25 +68,6 @@ model ApiRequest {
   user       Profile    @relation(fields: [user_id], references: [id], onDelete: Cascade)
   collection Collection? @relation(fields: [collection_id], references: [id], onDelete: Cascade)
   folder     Folder?    @relation(fields: [folder_id], references: [id], onDelete: Cascade)
-  request_history RequestHistory[]
 
   @@map("api_requests")
-}
-
-model RequestHistory {
-  id               String   @id @default(cuid()) @map("id")
-  user_id          String
-  request_id       String?
-  method           String
-  url              String
-  status_code      Int?
-  response_time    Int?
-  response_body    String?
-  response_headers Json?
-  created_at       DateTime @default(now())
-
-  user    Profile    @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  request ApiRequest? @relation(fields: [request_id], references: [id], onDelete: Cascade)
-
-  @@map("request_history")
 }
