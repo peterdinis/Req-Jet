@@ -62,7 +62,6 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
     }
   }, [selectedRequest]);
 
-  // --- Headers ---
   const addHeader = () => setHeaders([...headers, { key: "", value: "" }]);
   const removeHeader = (index: number) => setHeaders(headers.filter((_, i) => i !== index));
   const updateHeader = (index: number, field: "key" | "value", value: string) => {
@@ -71,7 +70,6 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
     setHeaders(newHeaders);
   };
 
-  // --- Query Params ---
   const addQueryParam = () => setQueryParams([...queryParams, { key: "", value: "", enabled: true }]);
   const removeQueryParam = (index: number) => setQueryParams(queryParams.filter((_, i) => i !== index));
   const updateQueryParam = (index: number, field: keyof QueryParam, value: string | boolean) => {
@@ -102,7 +100,6 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
     const logs: string[] = [];
     const originalConsoleLog = console.log;
 
-    // Zachytávanie console.log
     console.log = (...args: unknown[]) => {
       logs.push(
         args
@@ -121,11 +118,9 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
         testScript,
       );
       testFunction(responseData, responseTime, console);
-      // Ak sa test nezrúti a nevypíše log, dáme info o úspechu
       if (logs.length === 0)
         logs.push("✅ Test executed successfully (no console output)");
     } catch (error) {
-      // Zachytíme chyby testu
       logs.push(
         `❌ Test error: ${
           error && typeof error === "object" && "message" in error
@@ -135,13 +130,11 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
       );
     } finally {
       console.log = originalConsoleLog;
-      // Nastavíme výsledky do stavu, zobrazí sa v UI
       setTestResults(logs.join("\n"));
       toast({ title: "Tests executed" });
     }
   };
-
-  // --- Send request ---
+  
   const sendRequest = async () => {
     const finalUrl = buildUrl();
     if (!finalUrl) {
