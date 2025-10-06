@@ -22,6 +22,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/supabase/client";
 import { createId } from "@paralleldrive/cuid2";
+import { AuthError } from "@supabase/supabase-js";
+
+type Header = {
+  key: string;
+  value: string;
+};
 
 type SaveRequestDialogProps = {
   open: boolean;
@@ -30,7 +36,7 @@ type SaveRequestDialogProps = {
     name: string;
     url: string;
     method: string;
-    headers: any[];
+    headers: Header[];
     body: string;
   };
 };
@@ -105,7 +111,7 @@ export function SaveRequestDialog({
       setCollectionId("");
       setFolderId("");
     },
-    onError: (error: any) => {
+    onError: (error: Partial<AuthError>) => {
       toast({
         title: "Failed to save request",
         description: error.message,

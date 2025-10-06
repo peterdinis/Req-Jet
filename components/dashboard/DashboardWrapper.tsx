@@ -7,7 +7,7 @@ import { useUser } from "@/hooks/auth/useUser";
 import { RequestBuilder } from "../requests/RequestBuilder";
 
 const DashboardWrapper: FC = () => {
-  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const { user } = useUser();
 
   return (
