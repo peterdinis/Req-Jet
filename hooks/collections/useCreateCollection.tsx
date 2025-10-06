@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/supabase/client";
@@ -10,7 +10,10 @@ export const useCollectionMutations = () => {
 
   const deleteCollection = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("collections").delete().eq("id", id);
+      const { error } = await supabase
+        .from("collections")
+        .delete()
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {

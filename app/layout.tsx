@@ -17,11 +17,13 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Req Jet - Postman Clone",
-  description: "A lightweight Postman-like UI for testing APIs built with Next.js and Supabase.",
+  description:
+    "A lightweight Postman-like UI for testing APIs built with Next.js and Supabase.",
   authors: [{ name: "Your Name" }],
   openGraph: {
     title: "Req-Jet - Postman Clone",
-    description: "A lightweight Postman-like UI for testing APIs built with Next.js and Supabase.",
+    description:
+      "A lightweight Postman-like UI for testing APIs built with Next.js and Supabase.",
     url: "https://yourappdomain.com", // TODO: Update me
     siteName: "Req-Jet",
     locale: "en_US",
@@ -30,7 +32,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Req-Jet - Postman Clone",
-    description: "A lightweight Postman-like UI for testing APIs built with Next.js and Supabase.",
+    description:
+      "A lightweight Postman-like UI for testing APIs built with Next.js and Supabase.",
     images: ["/og-image.png"],
   },
 };

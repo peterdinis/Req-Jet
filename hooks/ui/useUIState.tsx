@@ -1,11 +1,15 @@
 import { useState } from "react";
 
 export const useUIState = () => {
-  const [expandedCollections, setExpandedCollections] = useState<Set<string>>(new Set());
+  const [expandedCollections, setExpandedCollections] = useState<Set<string>>(
+    new Set(),
+  );
   const [collectionDialogOpen, setCollectionDialogOpen] = useState(false);
   const [selectedCollection, setSelectedCollection] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [collectionToDelete, setCollectionToDelete] = useState<string | null>(null);
+  const [collectionToDelete, setCollectionToDelete] = useState<string | null>(
+    null,
+  );
   const [showHistory, setShowHistory] = useState(false);
 
   const toggleCollection = (id: string) => {

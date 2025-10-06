@@ -1,6 +1,6 @@
 "use client";
 
-import { Zap, Menu} from "lucide-react";
+import { Zap, Menu } from "lucide-react";
 import { FC } from "react";
 import { Button } from "../ui/button";
 import { ModeToggle } from "./ModeToggle";
@@ -102,7 +102,7 @@ const Navigation: FC = () => {
               <Zap className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="font-bold text-xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-             Req Jet
+              Req Jet
             </span>
           </motion.div>
 
