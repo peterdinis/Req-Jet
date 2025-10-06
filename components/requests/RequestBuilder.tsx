@@ -130,51 +130,56 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
     return `${url}?${params.toString()}`;
   };
 
- const runTests = (
-  responseData: { status: number; statusText: string; headers: { [k: string]: string }; data: unknown },
-  responseTime: number
-) => {
-  const logs: string[] = [];
-  const originalConsoleLog = console.log;
+  const runTests = (
+    responseData: {
+      status: number;
+      statusText: string;
+      headers: { [k: string]: string };
+      data: unknown;
+    },
+    responseTime: number,
+  ) => {
+    const logs: string[] = [];
+    const originalConsoleLog = console.log;
 
-  // Zachytávanie console.log
-  console.log = (...args: unknown[]) => {
-    logs.push(
-      args
-        .map((a) =>
-          typeof a === "object" ? JSON.stringify(a, null, 2) : String(a)
-        )
-        .join(" ")
-    );
+    // Zachytávanie console.log
+    console.log = (...args: unknown[]) => {
+      logs.push(
+        args
+          .map((a) =>
+            typeof a === "object" ? JSON.stringify(a, null, 2) : String(a),
+          )
+          .join(" "),
+      );
+    };
+
+    try {
+      const testFunction = new Function(
+        "response",
+        "responseTime",
+        "console",
+        testScript,
+      );
+      testFunction(responseData, responseTime, console);
+      // Ak sa test nezrúti a nevypíše log, dáme info o úspechu
+      if (logs.length === 0)
+        logs.push("✅ Test executed successfully (no console output)");
+    } catch (error) {
+      // Zachytíme chyby testu
+      logs.push(
+        `❌ Test error: ${
+          error && typeof error === "object" && "message" in error
+            ? (error as { message: string }).message
+            : "Unknown error"
+        }`,
+      );
+    } finally {
+      console.log = originalConsoleLog;
+      // Nastavíme výsledky do stavu, zobrazí sa v UI
+      setTestResults(logs.join("\n"));
+      toast({ title: "Tests executed" });
+    }
   };
-
-  try {
-    const testFunction = new Function(
-      "response",
-      "responseTime",
-      "console",
-      testScript
-    );
-    testFunction(responseData, responseTime, console);
-    // Ak sa test nezrúti a nevypíše log, dáme info o úspechu
-    if (logs.length === 0) logs.push("✅ Test executed successfully (no console output)");
-  } catch (error) {
-    // Zachytíme chyby testu
-    logs.push(
-      `❌ Test error: ${
-        error && typeof error === "object" && "message" in error
-          ? (error as { message: string }).message
-          : "Unknown error"
-      }`
-    );
-  } finally {
-    console.log = originalConsoleLog;
-    // Nastavíme výsledky do stavu, zobrazí sa v UI
-    setTestResults(logs.join("\n"));
-    toast({ title: "Tests executed" });
-  }
-};
-
 
   const sendRequest = async () => {
     const finalUrl = buildUrl();

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState } from "react";
 import { User } from "@supabase/supabase-js";
@@ -29,7 +29,11 @@ import {
   GripVertical,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -66,12 +70,23 @@ type ApiRequest = {
   folder_id: string | null;
 };
 
-export function DashboardSidebar({ user, onRequestSelect }: { user: User | null; onRequestSelect?: (request: any) => void }) {
-  const [expandedCollections, setExpandedCollections] = useState<Set<string>>(new Set());
+export function DashboardSidebar({
+  user,
+  onRequestSelect,
+}: {
+  user: User | null;
+  onRequestSelect?: (request: any) => void;
+}) {
+  const [expandedCollections, setExpandedCollections] = useState<Set<string>>(
+    new Set(),
+  );
   const [collectionDialogOpen, setCollectionDialogOpen] = useState(false);
-  const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
+  const [selectedCollection, setSelectedCollection] =
+    useState<Collection | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [collectionToDelete, setCollectionToDelete] = useState<string | null>(null);
+  const [collectionToDelete, setCollectionToDelete] = useState<string | null>(
+    null,
+  );
   const [showHistory, setShowHistory] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -114,7 +129,10 @@ export function DashboardSidebar({ user, onRequestSelect }: { user: User | null;
 
   const deleteCollectionMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("collections").delete().eq("id", id);
+      const { error } = await supabase
+        .from("collections")
+        .delete()
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -151,7 +169,11 @@ export function DashboardSidebar({ user, onRequestSelect }: { user: User | null;
             <Clock className="h-5 w-5" />
             Request History
           </h2>
-          <Button variant="ghost" size="sm" onClick={() => setShowHistory(false)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowHistory(false)}
+          >
             Back
           </Button>
         </div>
@@ -169,7 +191,9 @@ export function DashboardSidebar({ user, onRequestSelect }: { user: User | null;
             </div>
             <div className="flex-1">
               <h2 className="font-semibold">Req Jet</h2>
-              <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+              <p className="text-xs text-muted-foreground truncate">
+                {user?.email}
+              </p>
             </div>
           </div>
         </SidebarHeader>
@@ -193,10 +217,10 @@ export function DashboardSidebar({ user, onRequestSelect }: { user: User | null;
             <SidebarMenu>
               {collections.map((collection, index) => {
                 const collectionFolders = folders.filter(
-                  (f) => f.collection_id === collection.id
+                  (f) => f.collection_id === collection.id,
                 );
                 const collectionRequests = requests.filter(
-                  (r) => r.collection_id === collection.id && !r.folder_id
+                  (r) => r.collection_id === collection.id && !r.folder_id,
                 );
                 const isExpanded = expandedCollections.has(collection.id);
 
@@ -221,7 +245,9 @@ export function DashboardSidebar({ user, onRequestSelect }: { user: User | null;
                                 <ChevronRight className="h-4 w-4" />
                               )}
                               <Folder className="h-4 w-4" />
-                              <span className="flex-1 text-left">{collection.name}</span>
+                              <span className="flex-1 text-left">
+                                {collection.name}
+                              </span>
                             </SidebarMenuButton>
                           </CollapsibleTrigger>
                           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -257,20 +283,21 @@ export function DashboardSidebar({ user, onRequestSelect }: { user: User | null;
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
-                                transition={{ delay: idx * 0.03, duration: 0.2 }}
+                                transition={{
+                                  delay: idx * 0.03,
+                                  duration: 0.2,
+                                }}
                               >
                                 <div className="space-y-1">
-                                  <div
-                                    className="flex items-center gap-1 w-full group"
-                                  >
-                                    <div
-                                      className="cursor-grab active:cursor-grabbing opacity-50 hover:opacity-100 transition-opacity"
-                                    >
+                                  <div className="flex items-center gap-1 w-full group">
+                                    <div className="cursor-grab active:cursor-grabbing opacity-50 hover:opacity-100 transition-opacity">
                                       <GripVertical className="h-4 w-4 text-muted-foreground" />
                                     </div>
                                     <SidebarMenuButton className="flex-1 pl-2">
                                       <FolderPlus className="h-3 w-3" />
-                                      <span className="text-sm">{folder.name}</span>
+                                      <span className="text-sm">
+                                        {folder.name}
+                                      </span>
                                     </SidebarMenuButton>
                                   </div>
                                   {requests
@@ -279,10 +306,14 @@ export function DashboardSidebar({ user, onRequestSelect }: { user: User | null;
                                       <SidebarMenuButton
                                         key={request.id}
                                         className="w-full pl-6 cursor-pointer"
-                                        onClick={() => onRequestSelect?.(request)}
+                                        onClick={() =>
+                                          onRequestSelect?.(request)
+                                        }
                                       >
                                         <FileText className="h-3 w-3" />
-                                        <span className="text-xs">{request.name}</span>
+                                        <span className="text-xs">
+                                          {request.name}
+                                        </span>
                                       </SidebarMenuButton>
                                     ))}
                                 </div>
@@ -333,12 +364,18 @@ export function DashboardSidebar({ user, onRequestSelect }: { user: User | null;
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Collection</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this collection? This action cannot be undone.
+              Are you sure you want to delete this collection? This action
+              cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => collectionToDelete && deleteCollectionMutation.mutate(collectionToDelete)}>
+            <AlertDialogAction
+              onClick={() =>
+                collectionToDelete &&
+                deleteCollectionMutation.mutate(collectionToDelete)
+              }
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
