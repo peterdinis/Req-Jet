@@ -7,8 +7,16 @@ import { CheckCircle2, XCircle, Clock, FileText } from "lucide-react";
 import Editor from "@monaco-editor/react";
 import { useMonacoTheme } from "@/hooks/shared/useMonacoTheme";
 
+type ApiResponse = {
+  status: number;
+  statusText?: string;
+  data?: unknown;
+  headers?: Record<string, string>;
+  error?: string;
+};
+
 type ResponseViewerProps = {
-  response: any;
+  response: ApiResponse;
   responseTime: number;
 };
 

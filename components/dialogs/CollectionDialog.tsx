@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/supabase/client";
 import { createId } from "@paralleldrive/cuid2";
+import { AuthError } from "@supabase/supabase-js";
 
 type Collection = {
   id: string;
@@ -97,7 +98,7 @@ export function CollectionDialog({
       queryClient.invalidateQueries({ queryKey: ["collections"] });
       onOpenChange(false);
     },
-    onError: (error: any) => {
+    onError: (error: Partial<AuthError>) => {
       toast({
         title: "Failed to save collection",
         description: error.message,
