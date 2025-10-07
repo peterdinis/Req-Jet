@@ -10,7 +10,6 @@ import { useMemo } from "react";
 import prettyBytes from "pretty-bytes";
 import { ResponseViewerProps } from "@/types/ResponseTypes";
 
-
 const InfoBadge = ({ icon: Icon, label }: { icon: any; label: string }) => (
   <div className="flex items-center gap-1 text-sm text-muted-foreground">
     <Icon className="h-4 w-4" />
