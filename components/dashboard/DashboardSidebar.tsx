@@ -55,7 +55,7 @@ export function DashboardSidebar({
   onRequestSelect,
 }: {
   user: User | null;
-  onRequestSelect?: (request: any) => void;
+  onRequestSelect?: (request: unknown) => void;
 }) {
   const [expandedCollections, setExpandedCollections] = useState<Set<string>>(
     new Set(),
