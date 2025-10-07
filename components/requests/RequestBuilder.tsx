@@ -37,7 +37,7 @@ interface ResponseData {
   error?: string;
 }
 
-interface SavedRequest {
+export interface SavedRequest {
   method?: string;
   url?: string;
   headers?: KeyValue[];
