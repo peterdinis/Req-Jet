@@ -303,7 +303,9 @@ const AuthWrapper: FC = () => {
               {!isRecoveryMode && !showResetPassword && (
                 <Tabs
                   value={activeTab}
-                  onValueChange={(val) => setActiveTab(val as "login" | "signup")}
+                  onValueChange={(val) =>
+                    setActiveTab(val as "login" | "signup")
+                  }
                   className="w-full"
                 >
                   <TabsList className="grid w-full grid-cols-2">

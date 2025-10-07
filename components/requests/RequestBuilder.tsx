@@ -29,19 +29,40 @@ import {
 } from "@/components/ui/accordion";
 import { useMediaQuery } from "@/hooks/shared/useMediaQuery";
 
+interface ResponseData {
+  status: number;
+  statusText: string;
+  headers: Record<string, string>;
+  data: unknown;
+  error?: string;
+}
+
+interface SavedRequest {
+  method?: string;
+  url?: string;
+  headers?: KeyValue[];
+  body?: string;
+  request_type?: string;
+  graphql_query?: string;
+  graphql_variables?: string;
+  test_script?: string;
+}
+
+interface KeyValueListProps {
+  items: KeyValue[];
+  onChange: (index: number, key: keyof KeyValue | "add", value: unknown) => void;
+  onRemove: (index: number) => void;
+  allowAdd?: boolean;
+  addLabel?: string;
+}
+
 function KeyValueList({
   items,
   onChange,
   onRemove,
   allowAdd = true,
   addLabel = "Add",
-}: {
-  items: KeyValue[];
-  onChange: (index: number, key: keyof KeyValue | "add", value: any) => void;
-  onRemove: (index: number) => void;
-  allowAdd?: boolean;
-  addLabel?: string;
-}) {
+}: KeyValueListProps) {
   return (
     <div className="space-y-2">
       {items.map((item, index) => (
@@ -92,7 +113,11 @@ function KeyValueList({
   );
 }
 
-export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
+interface RequestBuilderProps {
+  selectedRequest?: SavedRequest;
+}
+
+export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
   const editorTheme = useMonacoTheme();
   const { toast } = useToast();
   const [state, dispatch] = useReducer(requestReducer, {
@@ -110,7 +135,7 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
     testScript:
       "// Test script\n// Available: response, responseTime\n// Example:\n// if (response.status === 200) {\n//   console.log('Success!');\n// }",
   });
-  const [response, setResponse] = useState<any>(null);
+  const [response, setResponse] = useState<ResponseData | null>(null);
   const [responseTime, setResponseTime] = useState<number>(0);
   const [testResults, setTestResults] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -172,23 +197,23 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
 
   const handleKeyValueChange =
     (type: "headers" | "queryParams") =>
-      (index: number, field: keyof KeyValue | "add", value: any) => {
-        if (field === "add") {
-          const newItems = [...state[type], value];
-          dispatch({
-            type: type === "headers" ? "SET_HEADERS" : "SET_QUERIES",
-            value: newItems,
-          });
-          return;
-        }
-        const newItems = state[type].map((item, i) =>
-          i === index ? { ...item, [field]: value } : item,
-        );
+    (index: number, field: keyof KeyValue | "add", value: unknown) => {
+      if (field === "add") {
+        const newItems = [...state[type], value as KeyValue];
         dispatch({
           type: type === "headers" ? "SET_HEADERS" : "SET_QUERIES",
           value: newItems,
         });
-      };
+        return;
+      }
+      const newItems = state[type].map((item, i) =>
+        i === index ? { ...item, [field]: value } : item,
+      );
+      dispatch({
+        type: type === "headers" ? "SET_HEADERS" : "SET_QUERIES",
+        value: newItems,
+      });
+    };
 
   const handleRemoveKeyValue =
     (type: "headers" | "queryParams") => (index: number) => {
@@ -240,10 +265,10 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
       const endTime = Date.now();
       setResponseTime(endTime - startTime);
       const contentType = res.headers.get("content-type");
-      const data = contentType?.includes("json")
+      const data: unknown = contentType?.includes("json")
         ? await res.json()
         : await res.text();
-      const responseData = {
+      const responseData: ResponseData = {
         status: res.status,
         statusText: res.statusText,
         headers: Object.fromEntries(res.headers.entries()),
@@ -254,7 +279,9 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
       if (state.testScript?.trim()) {
         try {
           const logs: string[] = [];
-          const customConsole = { log: (...args: any[]) => logs.push(args.join(" ")) };
+          const customConsole = {
+            log: (...args: unknown[]) => logs.push(args.join(" ")),
+          };
           new Function("response", "responseTime", "console", state.testScript)(
             responseData,
             endTime - startTime,
@@ -262,19 +289,27 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
           );
           setTestResults(
             logs.join("\n") ||
-            "✅ Test executed successfully (no console output)",
+              "✅ Test executed successfully (no console output)",
           );
-        } catch (e: any) {
-          setTestResults(`❌ Test error: ${e.message || e}`);
+        } catch (e) {
+          const errorMessage = e instanceof Error ? e.message : String(e);
+          setTestResults(`❌ Test error: ${errorMessage}`);
         }
       }
 
       toast({ title: "Request sent successfully" });
-    } catch (e: any) {
-      setResponse({ error: e.message || "Unknown error" });
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : "Unknown error";
+      setResponse({ 
+        error: errorMessage,
+        status: 0,
+        statusText: "Error",
+        headers: {},
+        data: null
+      });
       toast({
         title: "Request failed",
-        description: e.message || "Unknown error",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -312,13 +347,19 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"].map(
-                  (m) => (
-                    <SelectItem key={m} value={m}>
-                      {m}
-                    </SelectItem>
-                  ),
-                )}
+                {[
+                  "GET",
+                  "POST",
+                  "PUT",
+                  "PATCH",
+                  "DELETE",
+                  "HEAD",
+                  "OPTIONS",
+                ].map((m) => (
+                  <SelectItem key={m} value={m}>
+                    {m}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           )}
@@ -381,7 +422,11 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
           </CardHeader>
           <CardContent className="flex-1 overflow-auto">
             {isMobile ? (
-              <> <Accordion type="single" collapsible className="w-full space-y-2">
+              <Accordion
+                type="single"
+                collapsible
+                className="w-full space-y-2"
+              >
                 {state.requestType === "rest" && (
                   <AccordionItem value="params">
                     <AccordionTrigger>Params</AccordionTrigger>
@@ -399,14 +444,87 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
                   <AccordionItem value="graphql">
                     <AccordionTrigger>GraphQL</AccordionTrigger>
                     <AccordionContent>
-                      {/* pôvodný GraphQL Editor */}
+                      <div className="space-y-2">
+                        <Label>Query</Label>
+                        <Editor
+                          height="200px"
+                          defaultLanguage="graphql"
+                          value={state.graphqlQuery}
+                          onChange={(v) =>
+                            dispatch({
+                              type: "SET_FIELD",
+                              field: "graphqlQuery",
+                              value: v || "",
+                            })
+                          }
+                          theme={editorTheme}
+                          options={{
+                            minimap: { enabled: false },
+                            fontSize: 13,
+                          }}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Variables</Label>
+                        <Editor
+                          height="150px"
+                          defaultLanguage="json"
+                          value={state.graphqlVariables}
+                          onChange={(v) =>
+                            dispatch({
+                              type: "SET_FIELD",
+                              field: "graphqlVariables",
+                              value: v || "{}",
+                            })
+                          }
+                          theme={editorTheme}
+                          options={{
+                            minimap: { enabled: false },
+                            fontSize: 13,
+                          }}
+                        />
+                      </div>
                     </AccordionContent>
                   </AccordionItem>
                 )}
                 <AccordionItem value="auth">
                   <AccordionTrigger>Auth</AccordionTrigger>
                   <AccordionContent>
-                    {/* pôvodný Auth obsah */}
+                    <Label>Auth Type</Label>
+                    <Select
+                      value={state.authType}
+                      onValueChange={(v) =>
+                        dispatch({
+                          type: "SET_FIELD",
+                          field: "authType",
+                          value: v,
+                        })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No Auth</SelectItem>
+                        <SelectItem value="bearer">Bearer Token</SelectItem>
+                        <SelectItem value="basic">Basic Auth</SelectItem>
+                        <SelectItem value="apikey">API Key</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {state.authType !== "none" && (
+                      <Input
+                        type="password"
+                        placeholder="Enter token"
+                        value={state.authToken}
+                        onChange={(e) =>
+                          dispatch({
+                            type: "SET_FIELD",
+                            field: "authToken",
+                            value: e.target.value,
+                          })
+                        }
+                      />
+                    )}
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="headers">
@@ -424,28 +542,112 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
                   <AccordionItem value="body">
                     <AccordionTrigger>Body</AccordionTrigger>
                     <AccordionContent>
-                      {/* pôvodný Body obsah */}
+                      <Label>Body Type</Label>
+                      <Select
+                        value={state.bodyType}
+                        onValueChange={(v) =>
+                          dispatch({
+                            type: "SET_FIELD",
+                            field: "bodyType",
+                            value: v,
+                          })
+                        }
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(["json", "xml", "text", "form"] as const).map(
+                            (t) => (
+                              <SelectItem key={t} value={t}>
+                                {t.toUpperCase()}
+                              </SelectItem>
+                            ),
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <Editor
+                        height="200px"
+                        defaultLanguage={
+                          state.bodyType === "json"
+                            ? "json"
+                            : state.bodyType === "xml"
+                              ? "xml"
+                              : "plaintext"
+                        }
+                        value={state.body}
+                        onChange={(v) =>
+                          dispatch({
+                            type: "SET_FIELD",
+                            field: "body",
+                            value: v || "",
+                          })
+                        }
+                        theme={editorTheme}
+                        options={{
+                          minimap: { enabled: false },
+                          fontSize: 13,
+                          automaticLayout: true,
+                        }}
+                      />
                     </AccordionContent>
                   </AccordionItem>
                 )}
                 <AccordionItem value="tests">
                   <AccordionTrigger>Tests</AccordionTrigger>
                   <AccordionContent>
-                    {/* pôvodný Tests obsah */}
+                    <div className="flex justify-between items-center">
+                      <Label>Test Script</Label>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => response && sendRequest()}
+                      >
+                        <Play className="h-3 w-3" /> Run Tests
+                      </Button>
+                    </div>
+                    <Editor
+                      height="200px"
+                      defaultLanguage="javascript"
+                      value={state.testScript}
+                      onChange={(v) =>
+                        dispatch({
+                          type: "SET_FIELD",
+                          field: "testScript",
+                          value: v || "",
+                        })
+                      }
+                      theme={editorTheme}
+                      options={{ minimap: { enabled: false }, fontSize: 13 }}
+                    />
+                    {testResults && (
+                      <pre className="mt-2 p-3 bg-muted rounded-lg text-sm overflow-auto max-h-40">
+                        {testResults}
+                      </pre>
+                    )}
                   </AccordionContent>
                 </AccordionItem>
-              </Accordion></>
+              </Accordion>
             ) : (
               <Tabs
-                defaultValue={state.requestType === "graphql" ? "graphql" : "params"}
+                defaultValue={
+                  state.requestType === "graphql" ? "graphql" : "params"
+                }
                 className="w-full"
               >
                 <TabsList className="grid w-full grid-cols-2 md:grid-cols-6">
-                  {state.requestType === "rest" && <TabsTrigger value="params">Params</TabsTrigger>}
-                  {state.requestType === "graphql" && <TabsTrigger value="graphql">GraphQL</TabsTrigger>}
+                  {state.requestType === "rest" && (
+                    <TabsTrigger value="params">Params</TabsTrigger>
+                  )}
+                  {state.requestType === "graphql" && (
+                    <TabsTrigger value="graphql">GraphQL</TabsTrigger>
+                  )}
                   <TabsTrigger value="auth">Auth</TabsTrigger>
                   <TabsTrigger value="headers">Headers</TabsTrigger>
-                  {state.requestType === "rest" && <TabsTrigger value="body">Body</TabsTrigger>}
+                  {state.requestType === "rest" && (
+                    <TabsTrigger value="body">Body</TabsTrigger>
+                  )}
                   <TabsTrigger value="tests">Tests</TabsTrigger>
                 </TabsList>
 
