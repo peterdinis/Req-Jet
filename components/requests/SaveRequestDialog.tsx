@@ -25,6 +25,15 @@ import { createId } from "@paralleldrive/cuid2";
 import { AuthError } from "@supabase/supabase-js";
 import { SaveRequestDialogProps } from "@/types/DialogTypes";
 
+/**
+ * Dialog component for saving an API request to a collection/folder in Supabase.
+ *
+ * @param {SaveRequestDialogProps} props - Props to control dialog behavior and request data.
+ * @param {boolean} props.open - Whether the dialog is open.
+ * @param {(open: boolean) => void} props.onOpenChange - Callback when the dialog open state changes.
+ * @param {object} props.requestData - The request data to be saved (name, url, method, headers, body).
+ * @returns {JSX.Element} SaveRequestDialog component
+ */
 export function SaveRequestDialog({
   open,
   onOpenChange,
@@ -36,6 +45,9 @@ export function SaveRequestDialog({
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  /**
+   * Fetch all collections for the user.
+   */
   const { data: collections } = useQuery({
     queryKey: ["collections"],
     queryFn: async () => {
@@ -48,6 +60,9 @@ export function SaveRequestDialog({
     },
   });
 
+  /**
+   * Fetch folders within the selected collection.
+   */
   const { data: folders } = useQuery({
     queryKey: ["folders", collectionId],
     queryFn: async () => {
@@ -63,6 +78,9 @@ export function SaveRequestDialog({
     enabled: !!collectionId,
   });
 
+  /**
+   * Mutation to save a request to the database.
+   */
   const saveRequestMutation = useMutation({
     mutationFn: async () => {
       const {
@@ -101,6 +119,10 @@ export function SaveRequestDialog({
     },
   });
 
+  /**
+   * Handles the save button click.
+   * Validates input and triggers the mutation.
+   */
   const handleSave = () => {
     if (!name) {
       toast({ title: "Please enter a name", variant: "destructive" });
@@ -115,7 +137,9 @@ export function SaveRequestDialog({
         <DialogHeader>
           <DialogTitle>Save Request</DialogTitle>
         </DialogHeader>
+
         <div className="space-y-4 py-4">
+          {/* Request Name Input */}
           <div className="space-y-2">
             <Label>Request Name</Label>
             <Input
@@ -125,6 +149,7 @@ export function SaveRequestDialog({
             />
           </div>
 
+          {/* Collection Selector */}
           <div className="space-y-2">
             <Label>Collection (Optional)</Label>
             <Select value={collectionId} onValueChange={setCollectionId}>
@@ -141,6 +166,7 @@ export function SaveRequestDialog({
             </Select>
           </div>
 
+          {/* Folder Selector */}
           {collectionId && folders && folders.length > 0 && (
             <div className="space-y-2">
               <Label>Folder (Optional)</Label>
@@ -160,6 +186,7 @@ export function SaveRequestDialog({
           )}
         </div>
 
+        {/* Dialog Footer */}
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel

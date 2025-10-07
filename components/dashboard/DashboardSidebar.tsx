@@ -25,7 +25,6 @@ import {
   ChevronDown,
   Pencil,
   Trash2,
-  Clock,
   GripVertical,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -50,6 +49,15 @@ import { CollectionDialog } from "../dialogs/CollectionDialog";
 import { ModeToggle } from "../shared/ModeToggle";
 import { Collection } from "@/types/CollectionTypes";
 
+/**
+ * DashboardSidebar displays a user's collections, folders, and API requests
+ * in a collapsible, scrollable sidebar. Supports creating, editing, and
+ * deleting collections and folders, as well as logging out.
+ *
+ * @param {Object} props
+ * @param {User | null} props.user - The currently logged-in user.
+ * @param {(request: unknown) => void} [props.onRequestSelect] - Callback invoked when a request is selected.
+ */
 export function DashboardSidebar({
   user,
   onRequestSelect,
@@ -57,19 +65,33 @@ export function DashboardSidebar({
   user: User | null;
   onRequestSelect?: (request: unknown) => void;
 }) {
+  /** Tracks which collections are expanded */
   const [expandedCollections, setExpandedCollections] = useState<Set<string>>(
     new Set(),
   );
+
+  /** Controls whether the collection dialog is open */
   const [collectionDialogOpen, setCollectionDialogOpen] = useState(false);
+
+  /** The currently selected collection for editing */
   const [selectedCollection, setSelectedCollection] =
     useState<Collection | null>(null);
+
+  /** Controls whether the delete confirmation dialog is open */
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  /** ID of the collection to be deleted */
   const [collectionToDelete, setCollectionToDelete] = useState<string | null>(
     null,
   );
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  /**
+   * Fetch all collections for the user, ordered by creation date descending.
+   * Only runs if a user is logged in.
+   */
   const { data: collections = [] } = useQuery({
     queryKey: ["collections"],
     queryFn: async () => {
@@ -83,6 +105,10 @@ export function DashboardSidebar({
     enabled: !!user,
   });
 
+  /**
+   * Fetch all folders, ordered by position ascending.
+   * Only runs if a user is logged in.
+   */
   const { data: folders = [] } = useQuery({
     queryKey: ["folders"],
     queryFn: async () => {
@@ -96,6 +122,10 @@ export function DashboardSidebar({
     enabled: !!user,
   });
 
+  /**
+   * Fetch all API requests.
+   * Only runs if a user is logged in.
+   */
   const { data: requests = [] } = useQuery({
     queryKey: ["api_requests"],
     queryFn: async () => {
@@ -106,6 +136,9 @@ export function DashboardSidebar({
     enabled: !!user,
   });
 
+  /**
+   * Mutation to delete a collection by ID. Invalidates collections, requests, and folders queries on success.
+   */
   const deleteCollectionMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -126,10 +159,17 @@ export function DashboardSidebar({
     },
   });
 
+  /**
+   * Sign out the current user from Supabase.
+   */
   const handleLogout = async () => {
     await supabase.auth.signOut();
   };
 
+  /**
+   * Toggles the expanded/collapsed state of a collection in the sidebar.
+   * @param {string} id - The ID of the collection to toggle.
+   */
   const toggleCollection = (id: string) => {
     const newExpanded = new Set(expandedCollections);
     if (newExpanded.has(id)) {
@@ -158,6 +198,7 @@ export function DashboardSidebar({
         </SidebarHeader>
 
         <SidebarContent className="p-4">
+          {/* New Collection Button */}
           <div className="mb-4">
             <Button
               variant="outline"
@@ -172,6 +213,7 @@ export function DashboardSidebar({
             </Button>
           </div>
 
+          {/* Scrollable List of Collections */}
           <ScrollArea className="flex-1">
             <SidebarMenu>
               {collections.map((collection, index) => {
@@ -234,6 +276,8 @@ export function DashboardSidebar({
                             </Button>
                           </div>
                         </div>
+
+                        {/* Folders and Requests */}
                         <CollapsibleContent className="ml-6 mt-1 space-y-1">
                           <AnimatePresence>
                             {collectionFolders.map((folder, idx) => (
@@ -254,9 +298,7 @@ export function DashboardSidebar({
                                     </div>
                                     <SidebarMenuButton className="flex-1 pl-2">
                                       <FolderPlus className="h-3 w-3" />
-                                      <span className="text-sm">
-                                        {folder.name}
-                                      </span>
+                                      <span className="text-sm">{folder.name}</span>
                                     </SidebarMenuButton>
                                   </div>
                                   {requests
@@ -265,14 +307,10 @@ export function DashboardSidebar({
                                       <SidebarMenuButton
                                         key={request.id}
                                         className="w-full pl-6 cursor-pointer"
-                                        onClick={() =>
-                                          onRequestSelect?.(request)
-                                        }
+                                        onClick={() => onRequestSelect?.(request)}
                                       >
                                         <FileText className="h-3 w-3" />
-                                        <span className="text-xs">
-                                          {request.name}
-                                        </span>
+                                        <span className="text-xs">{request.name}</span>
                                       </SidebarMenuButton>
                                     ))}
                                 </div>
@@ -300,6 +338,7 @@ export function DashboardSidebar({
           <ModeToggle />
         </SidebarContent>
 
+        {/* Logout Button */}
         <SidebarFooter className="border-t border-border p-4">
           <Button
             variant="outline"
@@ -312,12 +351,14 @@ export function DashboardSidebar({
         </SidebarFooter>
       </Sidebar>
 
+      {/* Collection Dialog for create/edit */}
       <CollectionDialog
         open={collectionDialogOpen}
         onOpenChange={setCollectionDialogOpen}
         collection={selectedCollection}
       />
 
+      {/* Delete Collection Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

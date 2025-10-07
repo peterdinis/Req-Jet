@@ -1,8 +1,30 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { supabase } from "@/supabase/client";
 
+/**
+ * Custom hook to fetch collections, folders, and API requests from Supabase.
+ *
+ * This hook uses React Query to fetch and cache:
+ * - Collections (optionally enabled)
+ * - Folders
+ * - API requests
+ *
+ * @param {boolean} enabled - Whether the queries should be enabled (run).
+ * @returns {Object} Queries for collections, folders, and API requests
+ * @returns {UseQueryResult<any[], Error>} return.collectionsQuery - Query result for collections
+ * @returns {UseQueryResult<any[], Error>} return.foldersQuery - Query result for folders
+ * @returns {UseQueryResult<any[], Error>} return.requestsQuery - Query result for API requests
+ *
+ * @example
+ * ```ts
+ * const { collectionsQuery, foldersQuery, requestsQuery } = useCollections(true);
+ *
+ * if (collectionsQuery.isLoading) return <p>Loading collections...</p>;
+ * console.log(collectionsQuery.data);
+ * ```
+ */
 export const useCollections = (enabled: boolean) => {
   const collectionsQuery = useQuery({
     queryKey: ["collections"],

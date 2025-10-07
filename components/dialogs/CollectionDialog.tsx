@@ -19,22 +19,43 @@ import { createId } from "@paralleldrive/cuid2";
 import { AuthError } from "@supabase/supabase-js";
 import { Collection } from "@/types/CollectionTypes";
 
+/** 
+ * Props for CollectionDialog component.
+ */
 type CollectionDialogProps = {
+  /** Whether the dialog is open */
   open: boolean;
+
+  /** Callback when dialog open state changes */
   onOpenChange: (open: boolean) => void;
+
+  /** Optional collection object for editing; if null, dialog is for creating a new collection */
   collection?: Collection | null;
 };
 
+/**
+ * CollectionDialog allows creating a new collection or editing an existing one.
+ * Handles authentication, validation, and Supabase mutations for saving the collection.
+ *
+ * @param {CollectionDialogProps} props
+ */
 export function CollectionDialog({
   open,
   onOpenChange,
   collection,
 }: CollectionDialogProps) {
+  /** Name of the collection (state) */
   const [name, setName] = useState("");
+
+  /** Description of the collection (state) */
   const [description, setDescription] = useState("");
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  /**
+   * Populate state when editing an existing collection
+   */
   useEffect(() => {
     if (collection) {
       setName(collection.name);
@@ -45,6 +66,10 @@ export function CollectionDialog({
     }
   }, [collection]);
 
+  /**
+   * Mutation to save collection data to Supabase.
+   * Handles both creation and update, ensures user profile exists.
+   */
   const saveMutation = useMutation({
     mutationFn: async () => {
       const {
@@ -52,12 +77,12 @@ export function CollectionDialog({
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Ensure profile exists
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("id")
         .eq("id", user.id)
         .maybeSingle();
-
       if (profileError) throw profileError;
 
       if (!profile) {
@@ -70,6 +95,7 @@ export function CollectionDialog({
         if (insertError) throw insertError;
       }
 
+      // Update existing collection
       if (collection) {
         const { error } = await supabase
           .from("collections")
@@ -77,6 +103,7 @@ export function CollectionDialog({
           .eq("id", collection.id);
         if (error) throw error;
       } else {
+        // Create new collection
         const { error } = await supabase.from("collections").insert({
           id: createId(),
           user_id: user.id,
@@ -102,6 +129,10 @@ export function CollectionDialog({
     },
   });
 
+  /**
+   * Handles form submission for saving the collection.
+   * Validates that the collection name is not empty.
+   */
   const handleSave = () => {
     if (!name.trim()) {
       toast({ title: "Please enter a name", variant: "destructive" });
@@ -118,6 +149,8 @@ export function CollectionDialog({
             {collection ? "Edit Collection" : "New Collection"}
           </DialogTitle>
         </DialogHeader>
+
+        {/** Form fields for name and description */}
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label>Name</Label>
@@ -136,6 +169,8 @@ export function CollectionDialog({
             />
           </div>
         </div>
+
+        {/** Dialog footer with actions */}
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
