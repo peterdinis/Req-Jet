@@ -37,7 +37,7 @@ function KeyValueList({
   addLabel = "Add",
 }: {
   items: KeyValue[];
-  onChange: (index: number, key: keyof KeyValue | "add", value: any) => void;
+  onChange: (index: number, key: keyof KeyValue | "add", value: unknown) => void;
   onRemove: (index: number) => void;
   allowAdd?: boolean;
   addLabel?: string;
@@ -255,7 +255,7 @@ export function RequestBuilder({ selectedRequest }: { selectedRequest?: any }) {
         try {
           const logs: string[] = [];
           const customConsole = {
-            log: (...args: any[]) => logs.push(args.join(" ")),
+            log: (...args: unknown[]) => logs.push(args.join(" ")),
           };
           new Function("response", "responseTime", "console", state.testScript)(
             responseData,
