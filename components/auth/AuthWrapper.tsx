@@ -25,15 +25,41 @@ import {
 import { AuthError } from "@supabase/supabase-js";
 import { Spinner } from "../ui/spinner";
 
+/**
+ * `AuthWrapper` is a component handling user authentication flows including:
+ * - Login
+ * - Signup
+ * - Password reset
+ * - Password recovery
+ *
+ * It integrates with Supabase Auth and uses custom hooks for mutations.
+ */
 const AuthWrapper: FC = () => {
+  /** User email input */
   const [email, setEmail] = useState("");
+
+  /** User password input */
   const [password, setPassword] = useState("");
+
+  /** New password input for recovery mode */
   const [newPassword, setNewPassword] = useState("");
+
+  /** Full name input for signup */
   const [fullName, setFullName] = useState("");
+
+  /** Toggle for showing the reset password form */
   const [showResetPassword, setShowResetPassword] = useState(false);
+
+  /** Indicates if user is in recovery mode (setting a new password) */
   const [isRecoveryMode, setIsRecoveryMode] = useState(false);
+
+  /** Active tab state for login/signup */
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
+
+  /** Toggle for showing/hiding password input */
   const [showPassword, setShowPassword] = useState(false);
+
+  /** Toggle for showing/hiding new password input in recovery mode */
   const [showNewPassword, setShowNewPassword] = useState(false);
 
   const router = useRouter();
@@ -46,7 +72,12 @@ const AuthWrapper: FC = () => {
   const updatePasswordMutation = useUpdatePasswordMutation();
 
   /**
-   * Handle Supabase redirect (signup confirmation / magic link / recovery).
+   * Handle Supabase redirect links for:
+   * - Magic link login
+   * - Signup confirmation
+   * - Password recovery
+   *
+   * Sets session and shows toast notifications.
    */
   useEffect(() => {
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -82,7 +113,10 @@ const AuthWrapper: FC = () => {
     }
   }, [router, toast]);
 
-  /** LOGIN */
+  /**
+   * Handles user login
+   * @param e FormEvent<HTMLFormElement>
+   */
   const handleLogin = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     loginMutation.mutate(
@@ -105,7 +139,10 @@ const AuthWrapper: FC = () => {
     );
   };
 
-  /** SIGNUP */
+  /**
+   * Handles user signup
+   * @param e FormEvent<HTMLFormElement>
+   */
   const handleSignup = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     signupMutation.mutate(
@@ -130,7 +167,10 @@ const AuthWrapper: FC = () => {
     );
   };
 
-  /** RESET PASSWORD */
+  /**
+   * Handles password reset email request
+   * @param e FormEvent<HTMLFormElement>
+   */
   const handlePasswordReset = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     resetPasswordMutation.mutate(
@@ -153,7 +193,10 @@ const AuthWrapper: FC = () => {
     );
   };
 
-  /** UPDATE PASSWORD (recovery mode) */
+  /**
+   * Handles updating password in recovery mode
+   * @param e FormEvent<HTMLFormElement>
+   */
   const handleUpdatePassword = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     updatePasswordMutation.mutate(
@@ -206,15 +249,15 @@ const AuthWrapper: FC = () => {
                 {isRecoveryMode
                   ? "Set New Password"
                   : showResetPassword
-                    ? "Reset Password"
-                    : "Get Started"}
+                  ? "Reset Password"
+                  : "Get Started"}
               </CardTitle>
               <CardDescription>
                 {isRecoveryMode
                   ? "Enter your new password below"
                   : showResetPassword
-                    ? "Enter your email to receive a password reset link"
-                    : "Sign in or create an account to continue"}
+                  ? "Enter your email to receive a password reset link"
+                  : "Sign in or create an account to continue"}
               </CardDescription>
             </CardHeader>
 
