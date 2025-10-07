@@ -1,7 +1,15 @@
-import { RequestState } from "@/types/RequestsTypes";
+import { RequestState, KeyValue } from "@/types/RequestsTypes";
 
-// --- REDUCER ---
-export function requestReducer(state: RequestState, action: any): RequestState {
+
+type RequestAction =
+  | { type: "SET_FIELD"; field: keyof RequestState; value: string }
+  | { type: "SET_HEADERS"; value: KeyValue[] }
+  | { type: "SET_QUERIES"; value: KeyValue[] };
+  
+export function requestReducer(
+  state: RequestState,
+  action: RequestAction
+): RequestState {
   switch (action.type) {
     case "SET_FIELD":
       return { ...state, [action.field]: action.value };
