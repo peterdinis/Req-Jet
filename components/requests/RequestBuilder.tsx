@@ -29,6 +29,9 @@ import {
 } from "@/components/ui/accordion";
 import { useMediaQuery } from "@/hooks/shared/useMediaQuery";
 
+/**
+ * Structure of the response from a request
+ */
 interface ResponseData {
   status: number;
   statusText: string;
@@ -37,6 +40,9 @@ interface ResponseData {
   error?: string;
 }
 
+/**
+ * Represents a saved request
+ */
 export interface SavedRequest {
   method?: string;
   url?: string;
@@ -48,6 +54,9 @@ export interface SavedRequest {
   test_script?: string;
 }
 
+/**
+ * Props for the KeyValueList component
+ */
 interface KeyValueListProps {
   items: KeyValue[];
   onChange: (index: number, key: keyof KeyValue | "add", value: unknown) => void;
@@ -56,6 +65,9 @@ interface KeyValueListProps {
   addLabel?: string;
 }
 
+/**
+ * Component to render a dynamic list of key-value pairs (used for headers or query params)
+ */
 function KeyValueList({
   items,
   onChange,
@@ -113,13 +125,29 @@ function KeyValueList({
   );
 }
 
+/**
+ * Props for the RequestBuilder component
+ */
 interface RequestBuilderProps {
   selectedRequest?: SavedRequest;
 }
 
+/**
+ * Main component to build and send API requests (REST/GraphQL) with optional test scripts.
+ *
+ * Features:
+ * - REST and GraphQL request types
+ * - Headers, query params, body input
+ * - Authorization support (Bearer, Basic, API Key)
+ * - Inline test script execution
+ * - Response viewing and request saving
+ *
+ * @param selectedRequest - Optional pre-selected request to load into the builder
+ */
 export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
   const editorTheme = useMonacoTheme();
   const { toast } = useToast();
+
   const [state, dispatch] = useReducer(requestReducer, {
     method: "GET",
     url: "",
@@ -135,6 +163,7 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
     testScript:
       "// Test script\n// Available: response, responseTime\n// Example:\n// if (response.status === 200) {\n//   console.log('Success!');\n// }",
   });
+
   const [response, setResponse] = useState<ResponseData | null>(null);
   const [responseTime, setResponseTime] = useState<number>(0);
   const [testResults, setTestResults] = useState<string>("");
@@ -142,6 +171,9 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
 
+  /**
+   * Load the selected request into state when it changes
+   */
   useEffect(() => {
     if (selectedRequest) {
       dispatch({
@@ -186,6 +218,9 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
     }
   }, [selectedRequest]);
 
+  /**
+   * Build the final URL including query parameters
+   */
   const buildUrl = useMemo(() => {
     if (!state.url) return "";
     const params = new URLSearchParams();
@@ -195,6 +230,9 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
     return params.toString() ? `${state.url}?${params.toString()}` : state.url;
   }, [state.url, state.queryParams]);
 
+  /**
+   * Handle updates or addition in key-value lists (headers or query params)
+   */
   const handleKeyValueChange =
     (type: "headers" | "queryParams") =>
     (index: number, field: keyof KeyValue | "add", value: unknown) => {
@@ -215,6 +253,9 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
       });
     };
 
+  /**
+   * Handle removing an item from a key-value list (headers or query params)
+   */
   const handleRemoveKeyValue =
     (type: "headers" | "queryParams") => (index: number) => {
       const newItems = state[type].filter((_, i) => i !== index);
@@ -224,9 +265,13 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
       });
     };
 
+  /**
+   * Send the request based on current state, handle response, responseTime, and test scripts
+   */
   const sendRequest = useCallback(async () => {
     if (!state.url)
       return toast({ title: "Please enter a URL", variant: "destructive" });
+
     setIsLoading(true);
     setTestResults("");
     setResponse(null);
@@ -264,6 +309,7 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
       const res = await fetch(buildUrl, options);
       const endTime = Date.now();
       setResponseTime(endTime - startTime);
+
       const contentType = res.headers.get("content-type");
       const data: unknown = contentType?.includes("json")
         ? await res.json()
