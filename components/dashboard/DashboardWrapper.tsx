@@ -10,14 +10,16 @@ import { Spinner } from "../ui/spinner";
 /**
  * DashboardWrapper is the main container for the dashboard layout.
  * It provides the sidebar, header, and the request builder for API requests.
- * 
+ *
  * @component
  * @example
  * <DashboardWrapper />
  */
 const DashboardWrapper: FC = () => {
   /** Tracks the currently selected API request to display in the RequestBuilder */
-  const [selectedRequest, setSelectedRequest] = useState<SavedRequest | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<SavedRequest | null>(
+    null,
+  );
 
   /** The currently authenticated user from Supabase */
   const { user } = useUser();

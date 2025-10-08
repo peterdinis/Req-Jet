@@ -19,7 +19,7 @@ import { createId } from "@paralleldrive/cuid2";
 import { AuthError } from "@supabase/supabase-js";
 import { Collection } from "@/types/CollectionTypes";
 
-/** 
+/**
  * Props for CollectionDialog component.
  */
 type CollectionDialogProps = {

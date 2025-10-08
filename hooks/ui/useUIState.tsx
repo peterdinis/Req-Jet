@@ -38,7 +38,9 @@ export const useUIState = () => {
     new Set(),
   );
   const [collectionDialogOpen, setCollectionDialogOpen] = useState(false);
-  const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
+  const [selectedCollection, setSelectedCollection] = useState<string | null>(
+    null,
+  );
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [collectionToDelete, setCollectionToDelete] = useState<string | null>(
     null,

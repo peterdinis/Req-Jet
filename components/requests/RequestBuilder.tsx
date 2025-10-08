@@ -59,7 +59,11 @@ export interface SavedRequest {
  */
 interface KeyValueListProps {
   items: KeyValue[];
-  onChange: (index: number, key: keyof KeyValue | "add", value: unknown) => void;
+  onChange: (
+    index: number,
+    key: keyof KeyValue | "add",
+    value: unknown,
+  ) => void;
   onRemove: (index: number) => void;
   allowAdd?: boolean;
   addLabel?: string;
@@ -346,12 +350,12 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
       toast({ title: "Request sent successfully" });
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : "Unknown error";
-      setResponse({ 
+      setResponse({
         error: errorMessage,
         status: 0,
         statusText: "Error",
         headers: {},
-        data: null
+        data: null,
       });
       toast({
         title: "Request failed",
@@ -468,11 +472,7 @@ export function RequestBuilder({ selectedRequest }: RequestBuilderProps) {
           </CardHeader>
           <CardContent className="flex-1 overflow-auto">
             {isMobile ? (
-              <Accordion
-                type="single"
-                collapsible
-                className="w-full space-y-2"
-              >
+              <Accordion type="single" collapsible className="w-full space-y-2">
                 {state.requestType === "rest" && (
                   <AccordionItem value="params">
                     <AccordionTrigger>Params</AccordionTrigger>

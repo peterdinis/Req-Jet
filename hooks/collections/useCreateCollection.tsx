@@ -21,7 +21,7 @@ import { useToast } from "@/hooks/use-toast";
  * @example
  * ```ts
  * const { deleteCollection } = useCollectionMutations();
- * 
+ *
  * // Delete a collection
  * deleteCollection.mutate("collection-id-123");
  * ```

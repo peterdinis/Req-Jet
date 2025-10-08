@@ -288,7 +288,10 @@ const HeroWrapper: FC = () => {
       </nav>
 
       {/** Features Section */}
-      <section id="features" className="py-20 bg-gradient-to-b from-background to-muted/30">
+      <section
+        id="features"
+        className="py-20 bg-gradient-to-b from-background to-muted/30"
+      >
         {/* Features grid and animations */}
       </section>
 

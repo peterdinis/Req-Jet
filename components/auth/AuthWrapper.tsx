@@ -249,15 +249,15 @@ const AuthWrapper: FC = () => {
                 {isRecoveryMode
                   ? "Set New Password"
                   : showResetPassword
-                  ? "Reset Password"
-                  : "Get Started"}
+                    ? "Reset Password"
+                    : "Get Started"}
               </CardTitle>
               <CardDescription>
                 {isRecoveryMode
                   ? "Enter your new password below"
                   : showResetPassword
-                  ? "Enter your email to receive a password reset link"
-                  : "Sign in or create an account to continue"}
+                    ? "Enter your email to receive a password reset link"
+                    : "Sign in or create an account to continue"}
               </CardDescription>
             </CardHeader>
 

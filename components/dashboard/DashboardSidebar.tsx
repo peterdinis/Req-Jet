@@ -298,7 +298,9 @@ export function DashboardSidebar({
                                     </div>
                                     <SidebarMenuButton className="flex-1 pl-2">
                                       <FolderPlus className="h-3 w-3" />
-                                      <span className="text-sm">{folder.name}</span>
+                                      <span className="text-sm">
+                                        {folder.name}
+                                      </span>
                                     </SidebarMenuButton>
                                   </div>
                                   {requests
@@ -307,10 +309,14 @@ export function DashboardSidebar({
                                       <SidebarMenuButton
                                         key={request.id}
                                         className="w-full pl-6 cursor-pointer"
-                                        onClick={() => onRequestSelect?.(request)}
+                                        onClick={() =>
+                                          onRequestSelect?.(request)
+                                        }
                                       >
                                         <FileText className="h-3 w-3" />
-                                        <span className="text-xs">{request.name}</span>
+                                        <span className="text-xs">
+                                          {request.name}
+                                        </span>
                                       </SidebarMenuButton>
                                     ))}
                                 </div>

@@ -3,7 +3,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle, Clock, FileText, LucideIcon } from "lucide-react";
+import {
+  CheckCircle2,
+  XCircle,
+  Clock,
+  FileText,
+  LucideIcon,
+} from "lucide-react";
 import Editor from "@monaco-editor/react";
 import { useMonacoTheme } from "@/hooks/shared/useMonacoTheme";
 import { useMemo } from "react";
@@ -17,7 +23,13 @@ import { ResponseViewerProps } from "@/types/ResponseTypes";
  * @param {LucideIcon} props.icon - The icon to display
  * @param {string} props.label - The text label
  */
-const InfoBadge = ({ icon: Icon, label }: { icon: LucideIcon; label: string }) => (
+const InfoBadge = ({
+  icon: Icon,
+  label,
+}: {
+  icon: LucideIcon;
+  label: string;
+}) => (
   <div className="flex items-center gap-1 text-sm text-muted-foreground">
     <Icon className="h-4 w-4" />
     <span>{label}</span>

@@ -22,7 +22,7 @@ type RequestAction =
  */
 export function requestReducer(
   state: RequestState,
-  action: RequestAction
+  action: RequestAction,
 ): RequestState {
   switch (action.type) {
     /** Update a single field in the request state */

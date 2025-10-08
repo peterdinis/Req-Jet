@@ -11,7 +11,7 @@ import { useState, useEffect } from "react";
  * @example
  * ```ts
  * const isMobile = useMediaQuery("(max-width: 768px)");
- * 
+ *
  * return (
  *   <div>
  *     {isMobile ? "Mobile layout" : "Desktop layout"}

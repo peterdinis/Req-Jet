@@ -5,7 +5,7 @@ import { env } from "../env";
  * Creates a new instance of the PrismaClient with appropriate logging.
  * In development, logs queries, errors, and warnings.
  * In production, only logs errors.
- * 
+ *
  * @returns {PrismaClient} A new PrismaClient instance
  */
 const createPrismaClient = () =>
