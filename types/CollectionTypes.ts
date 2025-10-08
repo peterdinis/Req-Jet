@@ -1,6 +1,6 @@
 /**
  * Represents a collection of items.
- * 
+ *
  * @typedef {Object} Collection
  * @property {string} id - The unique identifier for the collection.
  * @property {string} name - The name of the collection.
