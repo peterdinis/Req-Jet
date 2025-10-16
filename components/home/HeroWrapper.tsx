@@ -28,7 +28,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
-import { UrlObject } from "url";
+import { Route } from "next";
 
 /**
  * HeroWrapper component displays the top navigation, hero sections,
@@ -136,7 +136,7 @@ const HeroWrapper: FC = () => {
         element.scrollIntoView({ behavior: "smooth" });
       }
     } else {
-      router.push(sectionId as any);
+      router.push(sectionId as unknown as Route);
     }
   };
 
@@ -289,10 +289,7 @@ const HeroWrapper: FC = () => {
       </nav>
 
       {/** Features Section */}
-      <section
-        id="features"
-        className="py-20 bg-gradient-to-b from-background to-muted/30"
-      >
+      <section id="features" className="py-20 bg-gradient-to-b from-background to-muted/30">
         {/* Features grid and animations */}
       </section>
 
