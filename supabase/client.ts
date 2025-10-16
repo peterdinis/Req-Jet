@@ -1,10 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
-import { env } from "@/env";
 
 export const supabase = createClient<Database>(
-  env.NEXT_PUBLIC_SUPABASE_URL,
-  env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 );
 
 export const createBrowserSupabaseClient = () => {
@@ -13,8 +12,8 @@ export const createBrowserSupabaseClient = () => {
   }
 
   return createClient<Database>(
-    env.NEXT_PUBLIC_SUPABASE_URL,
-    env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       auth: {
         storage: localStorage,
