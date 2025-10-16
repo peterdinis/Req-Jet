@@ -28,6 +28,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
+import { UrlObject } from "url";
 
 /**
  * HeroWrapper component displays the top navigation, hero sections,
@@ -135,7 +136,7 @@ const HeroWrapper: FC = () => {
         element.scrollIntoView({ behavior: "smooth" });
       }
     } else {
-      router.push(sectionId);
+      router.push(sectionId as any);
     }
   };
 
